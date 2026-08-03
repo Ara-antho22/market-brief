@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Market Brief — August 3, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000; --ink: #f2f2f2; --muted: #8a8a8a; --rule: #3a3a3a;
+    --up: #4ade80; --down: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 17px; line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 22px 90px; }
+
+  header.masthead { text-align: center; padding-bottom: 26px;
+                     border-bottom: 1px solid var(--rule); }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+              color: var(--muted); font-weight: 600; }
+  h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 900;
+        font-size: 40px; line-height: 1.12; margin: 14px 0 8px; }
+  .dateline { color: var(--muted); font-size: 14px; }
+
+  h2 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700;
+        font-size: 30px; text-align: center; margin: 52px 0 26px; }
+  h3 { font-size: 19px; font-weight: 700; margin: 36px 0 8px; }
+  h4 { font-size: 14px; font-weight: 700; margin: 20px 0 6px; letter-spacing: .04em; }
+
+  .intro p { margin: 0 0 16px; }
+
+  table.snapshot { width: 100%; border-collapse: collapse; table-layout: fixed;
+                    font-size: 13px; line-height: 1.4; }
+  table.snapshot td.cell { border: 1px solid var(--ink); padding: 8px 9px;
+                            vertical-align: top; width: 33.33%; }
+  .cell-label { font-weight: 700; font-size: 12.5px; }
+  .cell-value { font-size: 13px; margin-top: 2px; }
+  .cell-na { color: var(--muted); font-style: italic; font-size: 12px; }
+  .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+  .muted { color: var(--muted); }
+  .proxy { color: var(--muted); font-weight: 400; cursor: help; }
+  .cell-src { display: inline-block; margin-top: 3px; font-size: 10.5px;
+               color: var(--muted); text-decoration: none;
+               border-bottom: 1px dotted var(--muted); }
+  .cell-src:hover { color: var(--ink); }
+  .snapshot-note { text-align: center; color: var(--muted); font-size: 12.5px;
+                    margin-top: 14px; }
+
+  .entry { padding-bottom: 6px; }
+  .brief { margin: 0 0 10px; }
+  .tag { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+          border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px;
+          vertical-align: middle; white-space: nowrap; }
+  details { border-top: 1px solid var(--rule); padding-top: 8px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600;
+             letter-spacing: .04em; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: " ↓"; }
+  details[open] summary::after { content: " ↑"; }
+  summary:hover { color: var(--ink); }
+  .detail { padding-top: 10px; font-size: 16px; color: #d8d8d8; }
+  .detail p { margin: 0 0 14px; }
+  .srcs { font-size: 12.5px; color: var(--muted); }
+  .srcs a { color: var(--muted); }
+
+  .section-note { text-align: center; color: var(--muted); font-size: 13.5px;
+                   margin: -14px 0 24px; }
+  ol.art-list { list-style: none; counter-reset: art; padding: 0; margin: 0; }
+  li.art { counter-increment: art; position: relative; padding: 14px 0 14px 34px;
+            border-bottom: 1px solid rgba(255,255,255,.08); }
+  li.art::before { content: counter(art, decimal-leading-zero); position: absolute;
+                    left: 0; top: 16px; font-size: 12px; font-weight: 700;
+                    color: var(--muted); font-variant-numeric: tabular-nums; }
+  .art-head { display: block; font-size: 16.5px; font-weight: 600; line-height: 1.4;
+               color: var(--ink); text-decoration: none; }
+  .art-head:hover { text-decoration: underline; }
+  .art-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .art-why { font-size: 14.5px; color: #c4c4c4; margin-top: 6px;
+              border-left: 2px solid var(--rule); padding-left: 10px; }
+
+  .cal-list { padding-left: 20px; }
+  .cal-list li { margin-bottom: 8px; }
+  .cal-day { margin-bottom: 4px; }
+  ul.earn-list { list-style: none; padding: 0; margin: 0 0 6px; }
+  ul.earn-list li { font-size: 15px; padding: 3px 0;
+                     border-bottom: 1px solid rgba(255,255,255,.06); }
+  .tick { display: inline-block; min-width: 62px; font-weight: 700;
+           font-variant-numeric: tabular-nums; }
+  .meta { color: var(--muted); font-size: 13px; }
+
+  hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }
+  footer { color: var(--muted); font-size: 12.5px; text-align: center; }
+  footer a { color: var(--muted); }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    h1 { font-size: 30px; } h2 { font-size: 24px; }
+    table.snapshot, table.snapshot tbody, table.snapshot tr, table.snapshot td.cell {
+      display: block; width: 100%; }
+    table.snapshot td.cell { border-top: none; }
+    table.snapshot tr:first-child td.cell:first-child { border-top: 1px solid var(--ink); }
+    .tick { min-width: 54px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Daily Market Brief</div>
+    <h1>Morning Edition</h1>
+    <div class="dateline">Monday, August 3, 2026</div>
+  </header>
+
+  <h2>Newsletter Summary</h2>
+  <div class="intro"><p>Editorial generation was unavailable this morning. Market data below is current.</p></div>
+
+  <hr class="rule">
+
+  <h2>Markets Snapshot</h2>
+  <table class="snapshot"><tr><td class="cell"><div class="cell-label">S&amp;P 500</div><div class="cell-value">7,489.72 <span class="up">+0.70% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/SP500" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">NASDAQ Composite</div><div class="cell-value">25,373.85 <span class="up">+1.00% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/NASDAQCOM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Dow Jones</div><div class="cell-value">52,485.03 <span class="up">+0.53% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DJIA" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">Russell 2000<span class="proxy" title="Tracked via iShares Russell 2000 ETF as a proxy">*</span></div><div class="cell-value">291.20 <span class="down">-0.48% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/IWM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">FTSE 100<span class="proxy" title="Tracked via iShares MSCI United Kingdom ETF as a proxy">*</span></div><div class="cell-value">48.41 <span class="down">-0.55% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/EWU" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Euro Stoxx 50<span class="proxy" title="Tracked via SPDR EURO STOXX 50 ETF as a proxy">*</span></div><div class="cell-value">69.77 <span class="up">+0.10% &uarr;</span></div><a class="cell-src" href="https://finnhub.io/quote/FEZ" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">Nikkei 225</div><div class="cell-value">64,362.02 <span class="up">+4.03% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/NIKKEI225" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Shanghai Composite<span class="proxy" title="Tracked via Xtrackers Harvest CSI 300 ETF as a proxy">*</span></div><div class="cell-value">34.20 <span class="down">-0.20% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/ASHR" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">MSCI Frontier Markets</div><div class="cell-na">unavailable</div></td></tr><tr><td class="cell"><div class="cell-label">WTI Crude Oil</div><div class="cell-value">84.25 <span class="down">-8.16% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DCOILWTICO" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Gold Spot Price /Oz<span class="proxy" title="Tracked via SPDR Gold Shares ETF as a proxy">*</span></div><div class="cell-value">371.54 <span class="down">-1.49% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/GLD" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">U.S. High Yield Corporate Bond ETF<span class="proxy" title="Tracked via iShares iBoxx High Yield Corporate Bond ETF as a proxy">*</span></div><div class="cell-value">79.48 <span class="up">+0.01% &uarr;</span></div><a class="cell-src" href="https://finnhub.io/quote/HYG" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">U.S. Dollar Index<span class="proxy" title="Broad trade-weighted dollar index">*</span></div><div class="cell-value">120.71 <span class="down">-0.16% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">10-Year Treasury Yield</div><div class="cell-value">4.68% <span class="up">+0.21% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">CBOE Volatility Index</div><div class="cell-value">17.09 <span class="down">-17.28% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/VIXCLS" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">U.S. Consumer Price Index</div><div class="cell-value">3.46% <span class="muted">YoY</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">U.S. Unemployment Rate</div><div class="cell-value">4.2% <span class="muted">(-0.1 pp)</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/UNRATE" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">U.S. Secured Overnight Financing Rate</div><div class="cell-value">3.65% <span class="flat">+0.00% &ndash;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/SOFR" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">High Yield OAS Spread</div><div class="cell-value">2.84% <span class="down">-1.05% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Investment Grade OAS Spread</div><div class="cell-value">0.80% <span class="down">-1.23% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/BAMLC0A0CM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">2-Year Treasury Yield</div><div class="cell-value">4.23% <span class="up">+0.24% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DGS2" target="_blank" rel="noopener">source</a></td></tr></table>
+  <div class="snapshot-note">
+    Sources: <a href="https://fred.stlouisfed.org/">FRED (Federal Reserve Bank of
+    St.&nbsp;Louis)</a> and <a href="https://finnhub.io/">Finnhub</a>. Cells marked *
+    use a listed ETF as a proxy for the underlying index; hover the asterisk for the
+    instrument used.
+  </div>
+  
+  <hr class="rule">
+  <h2>Moving the Market</h2>
+  <p class="section-note">World events with the reach to move markets, and the line on
+  why each one matters.</p>
+  <ol class="art-list">
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMixwFBVV95cUxPR0dCZHl6c2NxTUYwZ05scXVhVWtXMjZGODdicV8yaEZYQlkzY1RXTkpVWE5BLWJGU2U0VlVmTldvMTRxRkJUdG16RVVEUGc1X3dKbVFHeUdDUTQ2dVlSYkRtNW1WWXlyekZHUGRfVnViUjMxNnNYSlYwV3lKNUh3WUZDZ3k1WnhCMng1TXJGNzg4SS0zc3lXcjlBdUxVcFlWZi01ZU03czJ0ck5aTnN6LXk1Ym9YejFMUm9aQXZHUEtSZXNsWDMw0gHMAUFVX3lxTFB2NU9tWnIta1c1T3ZxSGNEZWFybi1pMlpHWnZ2VGR6OHJzTWFYMDhpdElHSnJaOHZPQTVEdmhtUVpjY1h2bjJlakdiS2RBNUQxbG5fUlp2R2tHZFVJUFpVRnRsaHBYMnlxN3ZDVzVsSlVSbjJFSVFtN2wzemtNUWplQS1ibERDazIyUVlncjJGWnhQb2o1SzlSUEhIMXVuYVMxZ2Ffd1UxY21QYnRqZnFJNG9KczZ0R2NBRUIwT2tKZ2p0VF9aUnNPN0NmYQ?oc=5" target="_blank" rel="noopener">US-Iran deal news: Donald Trump says he will order halt to Iran strikes after parameters reached for deal to end war</a>
+          <div class="art-meta">ABC7 Chicago · 6h ago</div>
+          <div class="art-why">US signals halt to Iran strikes on deal parameters, easing war-risk premium in oil and global risk assets.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMi1wFBVV95cUxPS0x0SjU4ZndwYkkzbGpLWUl6VGJyaDk5LVdxVzZrY255WnVwSklCcExwZVRzVFBqdzU2c2hndzVGMW96SUdaWWJZeXY0bGRLVENqTWR3V2VPS3FzWWlXeUFxbE11RS1vM2RhaUVHU3FVMkJEQVZ6TXdMTnZ4VjhlMGljWF80dV9VaDBpdjEzdlZ5TlB5TkRVOEJKcGZfbU9LMnRTVzFvUVFUczI4cmQ1Z0dudlRfX0d3d1NnNl8tbHpFUGM3ZUVGSEpUNndKdWp6RDJNMXEwUQ?oc=5" target="_blank" rel="noopener">Mediators seek to revive US-Iran deal, open Hormuz for 60 days without fees: Israeli media</a>
+          <div class="art-meta">Anadolu Ajansı · 8h ago</div>
+          <div class="art-why">Mediators pushing 60-day fee-free Hormuz reopening would remove the tail risk behind the oil supply shock.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMi6AFBVV95cUxQaDdvc2NfcGNJblNrVWlJa19tUDlJempOeDI3TFhvSkdJMi04UTl0M3BlNFVnTm5NNVN3QllSVDEybHkzc3d6em9XeUtMcUJyRDNqTHpkcTNOZEQ5N0d3SXA4Zzh3Q3hYY0pFUEhYNXhpTmpobU52bGYyWFhCR0VDWTQ5WW1wVHAxR2xvVjFTOHVUZUlKZkVnUnl0VVRmSjNEemFzMUlueF83NGc0R1JNTUJWbjJvUnBlcHBhTTk3SW5ndWRBSkNabkFuaU9WNkVjRVAwMFVoRmxRMTdROVBVdmhKcVp6cVla0gHwAUFVX3lxTE45M3BBR3J6alhjd3JPQzhJQmhfUGY2V3FSMUpTN2NKMGpFU1VnVjFCNVYzRnYzSUQ5bDViYmdKMTc3MWtZaHJ1TWsweXVtV1ZVbE9GdWc5VHNIR1doSnFqWEhjejFiU0ppb01OanE5cFVtS0ZhaWxPVTA2UWtXem45a0VkXzZ3UDlDQXdPd3k1cGlNMWhyTEJCcTZDczUwcFpjWVFGVUtRWF8xbWV6dFh2S0tJZXBQdmxDNXZGaW8xRjV4S3h5ZGM5b25TQXZHeDZubFFlNWtQX1l3Z1YxcGJJZmhnMGdrTWxTeC04cVVuUw?oc=5" target="_blank" rel="noopener">US 30-Year Treasury Yield Hits 5.28%, Highest Since 2007 Despite Fed&#x27;s Hawkish Pause: What&#x27;s Driving Borrowing Costs?</a>
+          <div class="art-meta">NDTV Profit · 16h ago</div>
+          <div class="art-why">30-year Treasury yield at 5.28%, highest since 2007, tightens financial conditions and pressures credit spreads.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMif0FVX3lxTE5zSFVRZzM1RVFHMlNDcmJ3VlNrMHU2eGJiNmdCQlU4aXRRa2NFSU9yaG5MNExzSm5zamxFdGtaWVRTcUhOMFZkc3IwZFlBTXY5cVRVVlRiRFFQRUNfLUpPYVNNZWttcWJWVUF6WVcxM21IOTdGNHY5YnJaSGxOTEk?oc=5" target="_blank" rel="noopener">Analysis-China draws &#x27;red lines&#x27; around its economic model ahead of EU, US trade talks</a>
+          <div class="art-meta">AOL.com · 11h ago</div>
+          <div class="art-why">China setting hard red lines before EU/US trade talks raises odds of stalled negotiations and tariff escalation risk.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://www.bloomberg.com/news/articles/2026-07-31/dollar-heads-for-worst-week-in-three-months-as-fed-doubts-grow" target="_blank" rel="noopener">Dollar logs its worst week in over 3 months amid Fed doubts</a>
+          <div class="art-meta">Bloomberg · 2d ago</div>
+          <div class="art-why">Dollar&#x27;s worst week in three months on Fed doubts shifts FX hedging and EM/commodity pricing dynamics.</div>
+        </li></ol>
+
+  <hr class="rule">
+
+  <h2>Macro Update</h2>
+  <p class="muted">No macro entries this morning.</p>
+
+  <hr class="rule">
+
+  <h2>Sector Update</h2>
+  <p class="muted">No sector entries this morning.</p>
+  
+  <hr class="rule">
+  <h2>On the Calendar</h2>
+  <section class="calendar"><h3>Earnings this week</h3><div class="cal-day"><h4>Wednesday, August 5</h4><ul class="earn-list"><li><span class="tick">CVS</span> CVS Health <span class="meta">before open · est. $1.87 EPS</span></li><li><span class="tick">DIS</span> Disney <span class="meta">before open · est. $1.88 EPS</span></li><li><span class="tick">KHC</span> Kraft Heinz <span class="meta">before open · est. $0.53 EPS</span></li><li><span class="tick">LLY</span> Eli Lilly <span class="meta">before open · est. $6.07 EPS</span></li><li><span class="tick">MCK</span> McKesson <span class="meta">after close · est. $9.63 EPS</span></li></ul></div><div class="cal-day"><h4>Thursday, August 6</h4><ul class="earn-list"><li><span class="tick">COP</span> ConocoPhillips <span class="meta">before open · est. $2.91 EPS</span></li><li><span class="tick">ZTS</span> Zoetis <span class="meta">before open · est. $1.87 EPS</span></li></ul></div><div class="cal-day"><h4>Monday, August 10</h4><ul class="earn-list"><li><span class="tick">SPG</span> Simon Property <span class="meta">est. $1.69 EPS</span></li></ul></div><div class="srcs">Schedule via <a href="https://finnhub.io/" target="_blank" rel="noopener">Finnhub</a>, filtered to large caps. Companies move dates, so confirm against the issuer's investor relations page before relying on it.</div></section>
+
+  <hr class="rule">
+
+  <footer>
+    Built 2026-08-03 00:34 ET. Summaries are generated from published
+    headlines and may contain errors. Verify before acting on anything here.
+  </footer>
+
+</div>
+</body>
+</html>
