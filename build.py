@@ -443,13 +443,15 @@ above. This is the paragraph she reads if she reads nothing else.",
     {{
       "heading": "Short specific heading, not a generic category label",
       "brief": "3-4 sentences. What happened and the single reason it matters.",
-      "detail": "Four substantial paragraphs, separated by newlines. Paragraph one: what \
-happened in full, with the numbers. Paragraph two: the mechanism, meaning why this \
-transmits to asset prices rather than just restating that it did. Paragraph three: the \
-second-order effects, including what it means for credit conditions and financing \
-markets where relevant. Paragraph four: what would confirm or break this read, and the \
-specific thing to watch next. Be concrete throughout. This is the part she actually \
-reads on the train, so it should reward the tap.",
+      "detail": [
+        "Paragraph one: what happened in full, with the numbers.",
+        "Paragraph two: the mechanism, meaning why this transmits to asset prices \
+rather than just restating that it did.",
+        "Paragraph three: the second-order effects, including what it means for credit \
+conditions and financing markets where relevant.",
+        "Paragraph four: what would confirm or break this read, and the specific thing \
+to watch next."
+      ],
       "sources": [{{"name": "Publication", "url": "https://..."}}]
     }}
   ],
@@ -458,6 +460,9 @@ releases, central bank decisions, policy deadlines, notable scheduled meetings. 
 the day of week where the headlines establish it. Only include items the headlines \
 actually support."]
 }}
+
+"detail" is an array of exactly four strings, one per paragraph. Each should be \
+substantial and concrete. Never put a line break inside any string.
 
 Write exactly 3 macro entries."""
 
@@ -479,15 +484,20 @@ Return ONLY valid JSON, no markdown fences, no preamble:
 {{
   "heading": "{sector_name} — the specific angle in five words or fewer",
   "brief": "3-4 sentences. The dominant story in this sector right now and how it traded.",
-  "detail": "Four substantial paragraphs, separated by newlines. Paragraph one: the \
-dominant story in full, with specifics from the headlines. Paragraph two: which names or \
-subsectors are driving the move and why the dispersion looks the way it does. Paragraph \
-three: the balance sheet and financing angle, meaning how this environment affects the \
-sector's cost of capital, refinancing needs, leverage tolerance, or M&A appetite. \
-Paragraph four: the setup from here and the specific catalyst that would change it. Be \
-concrete. Do not pad.",
+  "detail": [
+    "Paragraph one: the dominant story in full, with specifics from the headlines.",
+    "Paragraph two: which names or subsectors are driving the move and why the \
+dispersion looks the way it does.",
+    "Paragraph three: the balance sheet and financing angle, meaning how this \
+environment affects the sector's cost of capital, refinancing needs, leverage \
+tolerance, or M&A appetite.",
+    "Paragraph four: the setup from here and the specific catalyst that would change it."
+  ],
   "sources": [{{"name": "Publication", "url": "https://..."}}]
 }}
+
+"detail" is an array of exactly four strings, one per paragraph. Each should be \
+substantial and concrete. Never put a line break inside any string.
 
 If the headlines are thin, write shorter and say so plainly rather than inventing \
 material."""
@@ -573,7 +583,8 @@ def generate_top_articles(pool):
         for a in pool
     )
     try:
-        result = call_claude(ARTICLES_PROMPT.format(pool=listing), max_tokens=2000)
+        result = call_claude(ARTICLES_PROMPT.format(pool=listing), max_tokens=3000,
+                             label="article curation")
     except Exception as e:
         print(f"  ! Article curation failed: {e}")
         return []
@@ -587,7 +598,32 @@ def generate_top_articles(pool):
     return out
 
 
-def call_claude(prompt, max_tokens=4000):
+def extract_json(text):
+    """Pull a JSON object out of a model response and parse it leniently.
+
+    Handles markdown fences, stray preamble, and literal control characters inside
+    strings (strict=False), which strict JSON rejects but models emit anyway.
+    """
+    text = text.strip()
+
+    # Strip markdown fences if present
+    if text.startswith("```"):
+        parts = text.split("```")
+        if len(parts) >= 2:
+            text = parts[1]
+            if text.lstrip().lower().startswith("json"):
+                text = text.lstrip()[4:]
+
+    # Fall back to the outermost braces, which survives any leading or trailing prose
+    start, end = text.find("{"), text.rfind("}")
+    if start != -1 and end > start:
+        text = text[start:end + 1]
+
+    return json.loads(text.strip(), strict=False)
+
+
+def call_claude(prompt, max_tokens=8000, label="", retry=True):
+    """Call the API and parse JSON out of the response, retrying once on failure."""
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={
@@ -600,17 +636,36 @@ def call_claude(prompt, max_tokens=4000):
             "max_tokens": max_tokens,
             "messages": [{"role": "user", "content": prompt}],
         },
-        timeout=180,
+        timeout=240,
     )
     r.raise_for_status()
+    payload = r.json()
+
     text = "".join(
-        b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text"
-    ).strip()
-    if text.startswith("```"):
-        text = text.split("```")[1]
-        if text.startswith("json"):
-            text = text[4:]
-    return json.loads(text.strip())
+        b.get("text", "") for b in payload.get("content", []) if b.get("type") == "text"
+    )
+
+    # A response cut off at the token ceiling is never valid JSON. Say so plainly
+    # rather than surfacing a confusing parse error.
+    if payload.get("stop_reason") == "max_tokens":
+        print(f"  ! {label or 'response'} hit the token ceiling ({max_tokens})")
+        if retry:
+            print(f"    retrying with a higher ceiling")
+            return call_claude(prompt, max_tokens=max_tokens * 2, label=label, retry=False)
+
+    try:
+        return extract_json(text)
+    except json.JSONDecodeError as e:
+        if not retry:
+            raise
+        print(f"  ! {label or 'response'} returned malformed JSON ({e}); retrying")
+        repair = (
+            prompt
+            + "\n\nIMPORTANT: your previous attempt was not valid JSON. Return a single "
+              "JSON object and nothing else. No markdown fences. No text before or after. "
+              "Never place a raw line break inside a string value."
+        )
+        return call_claude(repair, max_tokens=max_tokens, label=label, retry=False)
 
 
 def market_summary_lines(market):
@@ -632,7 +687,8 @@ def generate_macro(market, macro_news):
     try:
         return call_claude(
             MACRO_PROMPT.format(market_data=market_summary_lines(market), headlines=blob),
-            max_tokens=6000,
+            max_tokens=16000,
+            label="macro section",
         )
     except Exception as e:
         print(f"  ! Macro generation failed: {e}")
@@ -662,7 +718,8 @@ def generate_sectors(market, sector_news):
                     market_context=context,
                     headlines=headlines_blob(sector_news.get(s["key"], [])),
                 ),
-                max_tokens=3000,
+                max_tokens=8000,
+                label=f"{s['name']} sector",
             )
             entry["sector_key"] = s["key"]
             entry["etf"] = s["etf"]
@@ -787,10 +844,15 @@ def build_entry(item, idx, prefix, tag_html=""):
         if links:
             srcs = f'<div class="srcs">Sources: {links}</div>'
 
-    paras = "".join(
-        f"<p>{html.escape(p.strip())}</p>"
-        for p in item.get("detail", "").split("\n") if p.strip()
-    )
+    detail = item.get("detail", "")
+    if isinstance(detail, str):
+        # Fallback for the older newline-separated shape
+        chunks = [p for p in detail.split("\n") if p.strip()]
+    elif isinstance(detail, list):
+        chunks = [str(p) for p in detail if str(p).strip()]
+    else:
+        chunks = []
+    paras = "".join(f"<p>{html.escape(p.strip())}</p>" for p in chunks)
 
     return f"""
     <article class="entry">
@@ -1079,38 +1141,51 @@ def build_html(market, macro_content, sectors, earnings, articles):
 # ----------------------------------------------------------------------------
 
 def main():
-    print("Fetching FRED...")
+    import time
+    t_start = time.time()
+    marks = []
+
+    def stage(label):
+        now = time.time()
+        if marks:
+            print(f"    [{now - marks[-1][1]:.1f}s]")
+        marks.append((label, now))
+        print(label)
+
+    stage("Fetching FRED...")
     market = fetch_fred_all()
     print(f"  {len(market)} series")
 
-    print("Fetching Finnhub quotes and sector ETFs...")
+    stage("Fetching Finnhub quotes and sector ETFs...")
     market.update(fetch_finnhub_all())
 
-    print("Fetching earnings calendar...")
+    stage("Fetching earnings calendar...")
     earnings = fetch_earnings_calendar()
     print(f"  {len(earnings)} large-cap reports in the next 8 days")
 
-    print("Fetching market wire (Finnhub)...")
+    stage("Fetching market wire (Finnhub)...")
     wire = fetch_finnhub_news()
     print(f"  {len(wire)} wire stories")
 
-    print("Fetching macro headlines...")
+    stage("Fetching macro headlines...")
     macro_news = {k: news_for(q) for k, q in MACRO_TOPICS.items()}
     macro_news["wire"] = wire
 
-    print("Fetching world headlines...")
+    stage("Fetching world headlines...")
     world_news = {k: news_for(q, limit=8) for k, q in WORLD_TOPICS.items()}
 
-    print("Fetching sector headlines...")
+    stage("Fetching sector headlines...")
     sector_news = {s["key"]: news_for(s["query"]) for s in SECTORS}
 
-    print("Generating macro section...")
+    stage("Generating macro section...")
     macro_content = generate_macro(market, macro_news)
+    print(f"  {len(macro_content.get('macro', []))} macro entries written")
 
-    print("Generating sector sections...")
+    stage("Generating sector sections...")
     sectors = generate_sectors(market, sector_news)
+    print(f"  {len(sectors)} of {len(SECTORS)} sectors written")
 
-    print("Curating Moving the Market...")
+    stage("Curating Moving the Market...")
     pool = build_article_pool(
         world_news, {k: v for k, v in macro_news.items() if k != "wire"}, wire
     )
@@ -1118,7 +1193,7 @@ def main():
     articles = generate_top_articles(pool)
     print(f"  {len(articles)} selected")
 
-    print("Writing index.html...")
+    stage("Writing index.html...")
     page = build_html(market, macro_content, sectors, earnings, articles)
     with open("index.html", "w", encoding="utf-8") as fh:
         fh.write(page)
@@ -1127,7 +1202,8 @@ def main():
     with open(f"archive/{TODAY.strftime('%Y-%m-%d')}.html", "w", encoding="utf-8") as fh:
         fh.write(page)
 
-    print("Done.")
+    print(f"    [{time.time() - marks[-1][1]:.1f}s]")
+    print(f"Done in {time.time() - t_start:.1f}s total.")
 
 
 if __name__ == "__main__":
