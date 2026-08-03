@@ -1,0 +1,42 @@
+name: Build daily market brief
+
+on:
+  schedule:
+    # 09:45 UTC = 5:45am ET (daylight time) / 4:45am ET (standard time).
+    # GitHub cron is always UTC. Change to '45 10 * * 1-5' in November
+    # if you want to hold 5:45am through the winter.
+    - cron: '45 9 * * 1-5'
+  workflow_dispatch:        # lets you trigger a build by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the brief
+        env:
+          FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
+          FRED_KEY: ${{ secrets.FRED_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python build.py
+
+      - name: Commit and publish
+        run: |
+          git config user.name "market-brief-bot"
+          git config user.email "actions@github.com"
+          git add index.html archive/
+          git diff --staged --quiet || git commit -m "Brief for $(date -u +%Y-%m-%d)"
+          git push
