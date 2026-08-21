@@ -360,13 +360,23 @@ def news_for(query, limit=10):
             "https://news.google.com/rss/search",
             params={"q": f"{query} when:2d", "hl": "en-US", "gl": "US", "ceid": "US:en"},
             headers={"User-Agent": "Mozilla/5.0 (compatible; market-brief/1.0)"},
-            timeout=25,
+            timeout=12,
         )
         r.raise_for_status()
         return parse_rss(r.text, query[:30], limit)
     except Exception as e:
         print(f"  ! Google News failed ({query[:30]}...): {e}")
         return []
+
+
+def news_batch(topics, limit=10):
+    """Fetch several RSS queries at once. topics is {key: query}."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    keys = list(topics)
+    with ThreadPoolExecutor(max_workers=max(1, len(keys))) as pool:
+        results = list(pool.map(lambda k: news_for(topics[k], limit), keys))
+    return dict(zip(keys, results))
 
 
 def fetch_finnhub_news(limit=25):
@@ -701,9 +711,12 @@ def generate_macro(market, macro_news):
 
 
 def generate_sectors(market, sector_news):
+    """Write all sector entries. Runs in parallel since none depends on another."""
+    from concurrent.futures import ThreadPoolExecutor
+
     context = market_summary_lines(market)
-    out = []
-    for s in SECTORS:
+
+    def one(s):
         q = market.get(f"sector_{s['key']}")
         if q:
             move = (f"{s['etf']} ({s['name']} sector ETF): {q['value']:,.2f}, "
@@ -724,11 +737,16 @@ def generate_sectors(market, sector_news):
             entry["sector_key"] = s["key"]
             entry["etf"] = s["etf"]
             entry["move"] = q["pct_change"] if q else None
-            out.append(entry)
             print(f"    {s['name']} done")
+            return entry
         except Exception as e:
             print(f"  ! Sector {s['name']} failed: {e}")
-    return out
+            return None
+
+    with ThreadPoolExecutor(max_workers=len(SECTORS)) as pool:
+        results = list(pool.map(one, SECTORS))
+
+    return [r for r in results if r]
 
 
 # ----------------------------------------------------------------------------
@@ -962,6 +980,216 @@ def build_calendar(events, earnings):
   <section class="calendar">{ev_html}{earn_html}</section>"""
 
 
+def build_email_html(market, macro_content, sectors, earnings, articles, site_url):
+    """A table-based, inline-styled version of the brief for email clients.
+
+    Email clients strip <style> blocks and ignore most modern CSS, so this uses
+    tables and inline attributes throughout. Detail paragraphs are omitted; the
+    email carries the scannable version and links out for the full read.
+    """
+    BG, INK, MUTED, RULE = "#000000", "#f2f2f2", "#8a8a8a", "#3a3a3a"
+    UP, DOWN = "#4ade80", "#f87171"
+
+    def esc(t):
+        return html.escape(str(t))
+
+    def quote_cell(label, data, suffix="", yoy=False):
+        if not data:
+            return (f'<td width="33%" valign="top" bgcolor="{BG}" '
+                    f'style="border:1px solid {INK};padding:8px;color:{MUTED};'
+                    f'font-size:12px;font-family:Arial,sans-serif;">{esc(label)}<br>'
+                    f'<em>unavailable</em></td>')
+        if yoy and "yoy" in data:
+            val, chg_html = f'{data["yoy"]:.2f}% YoY', ""
+        else:
+            val = f'{data["value"]:,.{data.get("decimals", 2)}f}{suffix}'
+            chg = data.get("pct_change", 0.0)
+            color = UP if chg > 0 else (DOWN if chg < 0 else MUTED)
+            arrow = "&uarr;" if chg > 0 else ("&darr;" if chg < 0 else "&ndash;")
+            chg_html = f' <span style="color:{color};">{chg:+.2f}% {arrow}</span>'
+        return (f'<td width="33%" valign="top" bgcolor="{BG}" '
+                f'style="border:1px solid {INK};padding:8px;color:{INK};font-size:12px;'
+                f'font-family:Arial,sans-serif;line-height:1.4;">'
+                f'<strong>{esc(label)}</strong><br>{val}{chg_html}</td>')
+
+    m = market
+    snapshot_rows = [
+        [quote_cell("S&P 500", m.get("sp500")), quote_cell("NASDAQ", m.get("nasdaq")),
+         quote_cell("Dow Jones", m.get("dow"))],
+        [quote_cell("Russell 2000*", m.get("russell")), quote_cell("FTSE 100*", m.get("ftse")),
+         quote_cell("Euro Stoxx 50*", m.get("eurostoxx"))],
+        [quote_cell("Nikkei 225", m.get("nikkei")), quote_cell("Shanghai*", m.get("shanghai")),
+         quote_cell("MSCI Frontier*", m.get("frontier"))],
+        [quote_cell("WTI Crude", m.get("wti")), quote_cell("Gold /oz*", m.get("gold")),
+         quote_cell("U.S. HY Bond ETF*", m.get("hyg"))],
+        [quote_cell("U.S. Dollar Index", m.get("dxy")),
+         quote_cell("10-Year Treasury", m.get("ust10"), "%"),
+         quote_cell("VIX", m.get("vix"))],
+        [quote_cell("U.S. CPI", m.get("cpi_index"), yoy=True),
+         quote_cell("Unemployment", m.get("unemployment"), "%"),
+         quote_cell("SOFR", m.get("sofr"), "%")],
+        [quote_cell("High Yield OAS", m.get("hy_oas"), "%"),
+         quote_cell("Investment Grade OAS", m.get("ig_oas"), "%"),
+         quote_cell("2-Year Treasury", m.get("ust2"), "%")],
+    ]
+    snapshot = "".join(f"<tr>{''.join(r)}</tr>" for r in snapshot_rows)
+
+    def h2(text):
+        return (f'<tr><td style="padding:34px 0 14px;color:{INK};font-size:22px;'
+                f'font-weight:bold;font-family:Georgia,serif;text-align:center;">'
+                f'{esc(text)}</td></tr>')
+
+    def para(text, size=15, color=INK, pad="0 0 12px"):
+        return (f'<tr><td style="padding:{pad};color:{color};font-size:{size}px;'
+                f'line-height:1.6;font-family:Arial,sans-serif;">{text}</td></tr>')
+
+    body = ""
+
+    body += h2("Newsletter Summary")
+    body += para(esc(macro_content.get("intro", "")))
+
+    body += h2("Markets Snapshot")
+    body += (f'<tr><td style="padding-bottom:6px;"><table width="100%" cellpadding="0" '
+             f'cellspacing="0" border="0" style="border-collapse:collapse;">'
+             f'{snapshot}</table></td></tr>')
+    body += para("* tracked via a listed ETF as a proxy. Sources: FRED and Finnhub.",
+                 size=11, color=MUTED, pad="6px 0 0")
+
+    if articles:
+        body += h2("Moving the Market")
+        for a in articles:
+            meta = " &middot; ".join(
+                x for x in (esc(a.get("source", "")), time_ago(a.get("published", ""))) if x
+            )
+            body += para(
+                f'<a href="{esc(a["url"])}" style="color:{INK};text-decoration:none;'
+                f'font-weight:bold;">{esc(a["title"])}</a><br>'
+                f'<span style="color:{MUTED};font-size:12px;">{meta}</span><br>'
+                f'<span style="color:#c4c4c4;font-size:14px;">{esc(a.get("why", ""))}</span>',
+                pad="0 0 16px",
+            )
+
+    def entry_block(items, tag_fn=None):
+        out = ""
+        for x in items:
+            tag = tag_fn(x) if tag_fn else ""
+            out += para(
+                f'<strong style="font-size:17px;">{esc(x.get("heading", ""))}</strong>{tag}<br>'
+                f'{esc(x.get("brief", ""))}',
+                pad="0 0 18px",
+            )
+        return out
+
+    def email_tag(x):
+        mv = x.get("move")
+        if mv is None:
+            return ""
+        color = UP if mv > 0 else (DOWN if mv < 0 else MUTED)
+        return f' <span style="color:{color};font-size:13px;">{x.get("etf","")} {mv:+.2f}%</span>'
+
+    if macro_content.get("macro"):
+        body += h2("Macro Update")
+        body += entry_block(macro_content["macro"])
+
+    if sectors:
+        body += h2("Sector Update")
+        body += entry_block(sectors, email_tag)
+
+    if macro_content.get("events") or earnings:
+        body += h2("On the Calendar")
+        if macro_content.get("events"):
+            ev = "<br>".join(f"&bull; {esc(e)}" for e in macro_content["events"])
+            body += para(ev, pad="0 0 14px")
+        if earnings:
+            by_day = {}
+            for e in earnings:
+                by_day.setdefault(e["date"], []).append(e)
+            for date in sorted(by_day):
+                try:
+                    label = datetime.strptime(date, "%Y-%m-%d").strftime("%A, %B %-d")
+                except Exception:
+                    label = date
+                names = ", ".join(
+                    f'{esc(e["symbol"])} ({esc(e["name"])})' for e in by_day[date]
+                )
+                body += para(
+                    f'<strong style="font-size:13px;">{label}</strong><br>'
+                    f'<span style="font-size:14px;">{names}</span>',
+                    pad="0 0 10px",
+                )
+
+    link_btn = (
+        f'<tr><td align="center" style="padding:18px 0 8px;">'
+        f'<a href="{esc(site_url)}" style="display:inline-block;padding:11px 22px;'
+        f'border:1px solid {INK};color:{INK};text-decoration:none;font-size:14px;'
+        f'font-family:Arial,sans-serif;">Read the full edition &rarr;</a></td></tr>'
+    )
+
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:{BG};">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{BG}">
+<tr><td align="center" style="padding:26px 14px 50px;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="max-width:620px;width:100%;">
+
+  <tr><td align="center" style="padding-bottom:8px;color:{MUTED};font-size:10px;
+      letter-spacing:2px;font-family:Arial,sans-serif;">DAILY MARKET BRIEF</td></tr>
+  <tr><td align="center" style="color:{INK};font-size:30px;font-weight:bold;
+      font-family:Georgia,serif;padding-bottom:6px;">Morning Edition</td></tr>
+  <tr><td align="center" style="color:{MUTED};font-size:13px;
+      font-family:Arial,sans-serif;padding-bottom:10px;">
+      {TODAY.strftime('%A, %B %-d, %Y')}</td></tr>
+  {link_btn}
+  <tr><td style="border-top:1px solid {RULE};padding-top:4px;"></td></tr>
+
+  {body}
+
+  {link_btn}
+  <tr><td align="center" style="padding-top:24px;color:{MUTED};font-size:11px;
+      line-height:1.5;font-family:Arial,sans-serif;">
+      Summaries are generated from published headlines and may contain errors.
+      Verify before acting on anything here.</td></tr>
+
+</table>
+</td></tr></table>
+</body></html>"""
+
+
+def send_email(subject, html_body):
+    """Send the brief via Gmail SMTP. Skips silently if not configured."""
+    user = os.environ.get("GMAIL_USER", "")
+    password = os.environ.get("GMAIL_APP_PASSWORD", "")
+    recipients = [
+        a.strip() for a in os.environ.get("EMAIL_TO", "").split(",") if a.strip()
+    ]
+
+    if not (user and password and recipients):
+        print("  email not configured, skipping")
+        return False
+
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"Market Brief <{user}>"
+    msg["To"] = ", ".join(recipients)
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=45) as server:
+            server.login(user, password)
+            server.sendmail(user, recipients, msg.as_string())
+        print(f"  sent to {len(recipients)} recipient(s)")
+        return True
+    except Exception as e:
+        print(f"  ! Email failed: {e}")
+        return False
+
+
 def build_html(market, macro_content, sectors, earnings, articles):
     date_long = TODAY.strftime("%A, %B %-d, %Y")
     date_short = TODAY.strftime("%B %-d, %Y")
@@ -1168,14 +1396,14 @@ def main():
     print(f"  {len(wire)} wire stories")
 
     stage("Fetching macro headlines...")
-    macro_news = {k: news_for(q) for k, q in MACRO_TOPICS.items()}
+    macro_news = news_batch(MACRO_TOPICS)
     macro_news["wire"] = wire
 
     stage("Fetching world headlines...")
-    world_news = {k: news_for(q, limit=8) for k, q in WORLD_TOPICS.items()}
+    world_news = news_batch(WORLD_TOPICS, limit=8)
 
     stage("Fetching sector headlines...")
-    sector_news = {s["key"]: news_for(s["query"]) for s in SECTORS}
+    sector_news = news_batch({s["key"]: s["query"] for s in SECTORS})
 
     stage("Generating macro section...")
     macro_content = generate_macro(market, macro_news)
@@ -1201,6 +1429,13 @@ def main():
     os.makedirs("archive", exist_ok=True)
     with open(f"archive/{TODAY.strftime('%Y-%m-%d')}.html", "w", encoding="utf-8") as fh:
         fh.write(page)
+
+    stage("Sending email...")
+    site_url = os.environ.get("SITE_URL", "").strip()
+    email_html = build_email_html(
+        market, macro_content, sectors, earnings, articles, site_url
+    )
+    send_email(f"Market Brief — {TODAY.strftime('%B %-d, %Y')}", email_html)
 
     print(f"    [{time.time() - marks[-1][1]:.1f}s]")
     print(f"Done in {time.time() - t_start:.1f}s total.")
