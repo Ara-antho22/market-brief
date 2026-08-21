@@ -492,7 +492,9 @@ BROADER MARKET CONTEXT:
 Return ONLY valid JSON, no markdown fences, no preamble:
 
 {{
-  "heading": "{sector_name} — the specific angle in five words or fewer",
+  "heading": "The specific angle, six words or fewer. Do NOT include the sector name, \
+it is displayed separately above this. Write 'Sanctions reprice the crude curve', not \
+'Energy — sanctions reprice the crude curve'.",
   "brief": "3-4 sentences. The dominant story in this sector right now and how it traded.",
   "detail": [
     "Paragraph one: the dominant story in full, with specifics from the headlines.",
@@ -735,6 +737,7 @@ def generate_sectors(market, sector_news):
                 label=f"{s['name']} sector",
             )
             entry["sector_key"] = s["key"]
+            entry["sector_name"] = s["name"]
             entry["etf"] = s["etf"]
             entry["move"] = q["pct_change"] if q else None
             print(f"    {s['name']} done")
@@ -850,7 +853,123 @@ def build_snapshot(m):
     return f'<table class="snapshot">{body}</table>'
 
 
-def build_entry(item, idx, prefix, tag_html=""):
+def scan_archive(include_today=True):
+    """Read the archive folder and return editions newest-first, grouped by month.
+
+    Returns a list of {month_label, entries} where each entry is
+    {date, label, filename, is_today}.
+    """
+    dates = set()
+    if os.path.isdir("archive"):
+        for fn in os.listdir("archive"):
+            if not fn.endswith(".html"):
+                continue
+            stem = fn[:-5]
+            try:
+                datetime.strptime(stem, "%Y-%m-%d")
+                dates.add(stem)
+            except ValueError:
+                continue
+
+    today = TODAY.strftime("%Y-%m-%d")
+    if include_today:
+        dates.add(today)
+
+    groups, current = [], None
+    for d in sorted(dates, reverse=True):
+        dt = datetime.strptime(d, "%Y-%m-%d")
+        month_label = dt.strftime("%B %Y")
+        if current is None or current["month_label"] != month_label:
+            current = {"month_label": month_label, "entries": []}
+            groups.append(current)
+        current["entries"].append({
+            "date": d,
+            "label": dt.strftime("%A %-m/%-d"),
+            "filename": f"{d}.html",
+            "is_today": d == today,
+        })
+    return groups
+
+
+def archive_list_html(groups, href_prefix, current_date=None):
+    """Render the grouped edition list. Shared by the drawer and the archive page."""
+    if not groups:
+        return '<p class="arc-empty">No past editions yet.</p>'
+
+    out = ""
+    for g in groups:
+        out += f'<div class="arc-month">{html.escape(g["month_label"])}</div><ul class="arc-list">'
+        for e in g["entries"]:
+            if e["date"] == current_date:
+                out += f'<li class="arc-item current">{html.escape(e["label"])}<span class="arc-now">reading</span></li>'
+            else:
+                href = f'{href_prefix}{e["filename"]}'
+                out += (f'<li class="arc-item"><a href="{html.escape(href)}">'
+                        f'{html.escape(e["label"])}</a></li>')
+        out += "</ul>"
+    return out
+
+
+def build_drawer(groups, href_prefix, current_date, home_href):
+    """Desktop slide-out drawer plus the mobile link to the standalone archive page."""
+    listing = archive_list_html(groups, href_prefix, current_date)
+    count = sum(len(g["entries"]) for g in groups)
+
+    return f"""
+  <button class="arc-toggle desktop-only" id="arcToggle" aria-expanded="false"
+          aria-controls="arcDrawer">Previous Editions</button>
+  <a class="arc-toggle mobile-only" href="{html.escape(home_href)}archive.html">Previous Editions</a>
+
+  <div class="arc-scrim" id="arcScrim" hidden></div>
+  <aside class="arc-drawer" id="arcDrawer" aria-label="Previous editions" hidden>
+    <div class="arc-head">
+      <span>Previous Editions</span>
+      <button class="arc-close" id="arcClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="arc-body">
+      <div class="arc-count">{count} edition{'s' if count != 1 else ''}</div>
+      {listing}
+    </div>
+  </aside>"""
+
+
+DRAWER_JS = """
+<script>
+(function () {
+  var t = document.getElementById('arcToggle');
+  var d = document.getElementById('arcDrawer');
+  var s = document.getElementById('arcScrim');
+  var c = document.getElementById('arcClose');
+  if (!t || !d || !s) return;
+
+  function open() {
+    d.hidden = false; s.hidden = false;
+    requestAnimationFrame(function () {
+      d.classList.add('open'); s.classList.add('open');
+    });
+    t.setAttribute('aria-expanded', 'true');
+  }
+  function close() {
+    d.classList.remove('open'); s.classList.remove('open');
+    t.setAttribute('aria-expanded', 'false');
+    setTimeout(function () { d.hidden = true; s.hidden = true; }, 220);
+    t.focus();
+  }
+  function toggle() {
+    if (d.classList.contains('open')) { close(); } else { open(); }
+  }
+
+  t.addEventListener('click', toggle);
+  s.addEventListener('click', close);
+  if (c) c.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && d.classList.contains('open')) close();
+  });
+})();
+</script>"""
+
+
+def build_entry(item, idx, prefix, tag_html="", label=""):
     sid = f"{prefix}-{idx}"
     srcs = ""
     if item.get("sources"):
@@ -872,9 +991,15 @@ def build_entry(item, idx, prefix, tag_html=""):
         chunks = []
     paras = "".join(f"<p>{html.escape(p.strip())}</p>" for p in chunks)
 
+    label_html = (
+        f'<div class="entry-label">{html.escape(label)}{tag_html}</div>' if label else ""
+    )
+    heading_tag = "" if label else tag_html
+
     return f"""
     <article class="entry">
-      <h3>{html.escape(item.get('heading', ''))}{tag_html}</h3>
+      {label_html}
+      <h3>{html.escape(item.get('heading', ''))}{heading_tag}</h3>
       <p class="brief">{html.escape(item.get('brief', ''))}</p>
       <details id="{sid}">
         <summary>Read more</summary>
@@ -980,6 +1105,74 @@ def build_calendar(events, earnings):
   <section class="calendar">{ev_html}{earn_html}</section>"""
 
 
+def build_archive_page(groups):
+    """Standalone list of every past edition. This is what mobile links to."""
+    listing = archive_list_html(groups, "archive/", None)
+    count = sum(len(g["entries"]) for g in groups)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previous Editions — Daily Market Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {{ --bg:#000; --ink:#f2f2f2; --muted:#8a8a8a; --rule:#3a3a3a; }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }}
+  .wrap {{ max-width:640px; margin:0 auto; padding:40px 22px 80px; }}
+  .eyebrow {{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; text-align:center;
+  }}
+  h1 {{
+    font-family:'Playfair Display', Georgia, serif; font-weight:900;
+    font-size:34px; text-align:center; margin:12px 0 6px;
+  }}
+  .count {{ text-align:center; color:var(--muted); font-size:13px; margin-bottom:8px; }}
+  .back {{ display:block; text-align:center; color:var(--muted); font-size:13.5px;
+           margin-bottom:26px; }}
+  .back:hover {{ color:var(--ink); }}
+  hr.rule {{ border:0; border-top:1px solid var(--rule); margin:0 0 8px; }}
+  .arc-month {{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+    border-bottom:1px solid var(--rule); padding-bottom:6px; margin:30px 0 8px;
+  }}
+  ul.arc-list {{ list-style:none; padding:0; margin:0; }}
+  .arc-item {{ font-size:16px; padding:9px 0;
+               border-bottom:1px solid rgba(255,255,255,.06); }}
+  .arc-item a {{ color:var(--ink); text-decoration:none; display:block; }}
+  .arc-item a:hover {{ text-decoration:underline; }}
+  .arc-item.current {{ color:var(--muted); display:flex;
+                       justify-content:space-between; align-items:baseline; }}
+  .arc-now {{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; }}
+  .arc-empty {{ color:var(--muted); }}
+  @media (prefers-reduced-motion: reduce) {{
+    * {{ animation:none !important; transition:none !important; }}
+  }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Daily Market Brief</div>
+  <h1>Previous Editions</h1>
+  <div class="count">{count} edition{'s' if count != 1 else ''} archived</div>
+  <a class="back" href="index.html">&larr; Back to the latest edition</a>
+  <hr class="rule">
+  {listing}
+</div>
+</body>
+</html>"""
+
+
 def build_email_html(market, macro_content, sectors, earnings, articles, site_url):
     """A table-based, inline-styled version of the brief for email clients.
 
@@ -1069,12 +1262,19 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
                 pad="0 0 16px",
             )
 
-    def entry_block(items, tag_fn=None):
+    def entry_block(items, tag_fn=None, show_label=False):
         out = ""
         for x in items:
             tag = tag_fn(x) if tag_fn else ""
+            name = x.get("sector_name", "") if show_label else ""
+            label = (
+                f'<span style="color:{MUTED};font-size:11px;letter-spacing:2px;">'
+                f'{esc(name.upper())}</span>{tag}<br>' if name else ""
+            )
             out += para(
-                f'<strong style="font-size:17px;">{esc(x.get("heading", ""))}</strong>{tag}<br>'
+                f'{label}'
+                f'<strong style="font-size:17px;">{esc(x.get("heading", ""))}</strong>'
+                f'{"" if name else tag}<br>'
                 f'{esc(x.get("brief", ""))}',
                 pad="0 0 18px",
             )
@@ -1093,7 +1293,7 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
 
     if sectors:
         body += h2("Sector Update")
-        body += entry_block(sectors, email_tag)
+        body += entry_block(sectors, email_tag, show_label=True)
 
     if macro_content.get("events") or earnings:
         body += h2("On the Calendar")
@@ -1190,16 +1390,32 @@ def send_email(subject, html_body):
         return False
 
 
-def build_html(market, macro_content, sectors, earnings, articles):
+def build_html(market, macro_content, sectors, earnings, articles,
+               archive_groups=None, in_archive=False, edition_date=None):
+    """Render the full page.
+
+    in_archive shifts relative links, since archived copies live one folder down.
+    """
     date_long = TODAY.strftime("%A, %B %-d, %Y")
     date_short = TODAY.strftime("%B %-d, %Y")
     moving = build_articles(articles)
+
+    # Archived copies sit in archive/, so sibling editions are alongside them and the
+    # site root is one level up.
+    href_prefix = "" if in_archive else "archive/"
+    home_href = "../" if in_archive else ""
+
+    drawer = build_drawer(
+        archive_groups or [], href_prefix,
+        edition_date or TODAY.strftime("%Y-%m-%d"), home_href,
+    )
 
     macro = "".join(
         build_entry(x, i, "macro") for i, x in enumerate(macro_content.get("macro", []))
     )
     micro = "".join(
-        build_entry(x, i, "sector", sector_tag(x)) for i, x in enumerate(sectors)
+        build_entry(x, i, "sector", sector_tag(x), x.get("sector_name", ""))
+        for i, x in enumerate(sectors)
     )
     calendar = build_calendar(macro_content.get("events", []), earnings)
 
@@ -1258,7 +1474,67 @@ def build_html(market, macro_content, sectors, earnings, articles):
                     margin-top: 14px; }}
 
   .entry {{ padding-bottom: 6px; }}
+  .entry-label {{
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin: 36px 0 2px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }}
+  .entry-label + h3 {{ margin-top: 0; }}
   .brief {{ margin: 0 0 10px; }}
+
+  /* ---- Archive drawer ---- */
+  .arc-toggle {{
+    position: fixed; left: 0; top: 96px; z-index: 40;
+    background: var(--bg); color: var(--muted);
+    border: 1px solid var(--rule); border-left: none;
+    border-radius: 0 4px 4px 0; padding: 10px 12px;
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase;
+    writing-mode: vertical-rl; cursor: pointer; text-decoration: none;
+  }}
+  .arc-toggle:hover {{ color: var(--ink); border-color: var(--ink); }}
+  .arc-scrim {{
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 50;
+    opacity: 0; transition: opacity .2s ease;
+  }}
+  .arc-scrim.open {{ opacity: 1; }}
+  .arc-drawer {{
+    position: fixed; left: 0; top: 0; bottom: 0; width: 300px; max-width: 84vw;
+    background: #0a0a0a; border-right: 1px solid var(--rule); z-index: 60;
+    transform: translateX(-100%); transition: transform .22s ease;
+    display: flex; flex-direction: column;
+  }}
+  .arc-drawer.open {{ transform: translateX(0); }}
+  .arc-head {{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 18px 14px; border-bottom: 1px solid var(--rule);
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink); font-weight: 700;
+  }}
+  .arc-close {{
+    background: none; border: none; color: var(--muted);
+    font-size: 24px; line-height: 1; cursor: pointer; padding: 0 2px;
+  }}
+  .arc-close:hover {{ color: var(--ink); }}
+  .arc-body {{ overflow-y: auto; padding: 14px 18px 30px; }}
+  .arc-count {{ font-size: 11.5px; color: var(--muted); margin-bottom: 12px; }}
+  .arc-month {{
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700;
+    border-bottom: 1px solid var(--rule); padding-bottom: 5px; margin: 18px 0 6px;
+  }}
+  ul.arc-list {{ list-style: none; padding: 0; margin: 0; }}
+  .arc-item {{ font-size: 14.5px; padding: 5px 0; }}
+  .arc-item a {{ color: var(--ink); text-decoration: none; }}
+  .arc-item a:hover {{ text-decoration: underline; }}
+  .arc-item.current {{
+    color: var(--muted); display: flex; justify-content: space-between;
+    align-items: baseline; gap: 8px;
+  }}
+  .arc-now {{ font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }}
+  .arc-empty {{ color: var(--muted); font-size: 14px; }}
+  .desktop-only {{ display: block; }}
+  .mobile-only {{ display: none; }}
   .tag {{ font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
           border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px;
           vertical-align: middle; white-space: nowrap; }}
@@ -1311,6 +1587,9 @@ def build_html(market, macro_content, sectors, earnings, articles):
     table.snapshot td.cell {{ border-top: none; }}
     table.snapshot tr:first-child td.cell:first-child {{ border-top: 1px solid var(--ink); }}
     .tick {{ min-width: 54px; }}
+    .desktop-only {{ display: none; }}
+    .mobile-only {{ display: block; }}
+    .arc-toggle {{ top: auto; bottom: 18px; }}
   }}
   @media (prefers-reduced-motion: reduce) {{
     * {{ animation: none !important; transition: none !important; }}
@@ -1318,6 +1597,7 @@ def build_html(market, macro_content, sectors, earnings, articles):
 </style>
 </head>
 <body>
+{drawer}
 <div class="wrap">
 
   <header class="masthead">
@@ -1355,11 +1635,13 @@ def build_html(market, macro_content, sectors, earnings, articles):
   <hr class="rule">
 
   <footer>
+    {f'<p><a href="{home_href}index.html">&larr; Back to the latest edition</a></p>' if in_archive else ''}
     Built {TODAY.strftime('%Y-%m-%d %H:%M')} ET. Summaries are generated from published
     headlines and may contain errors. Verify before acting on anything here.
   </footer>
 
 </div>
+{DRAWER_JS}
 </body>
 </html>"""
 
@@ -1421,14 +1703,30 @@ def main():
     articles = generate_top_articles(pool)
     print(f"  {len(articles)} selected")
 
-    stage("Writing index.html...")
-    page = build_html(market, macro_content, sectors, earnings, articles)
-    with open("index.html", "w", encoding="utf-8") as fh:
-        fh.write(page)
-
+    stage("Writing pages...")
     os.makedirs("archive", exist_ok=True)
-    with open(f"archive/{TODAY.strftime('%Y-%m-%d')}.html", "w", encoding="utf-8") as fh:
-        fh.write(page)
+    groups = scan_archive(include_today=True)
+    total = sum(len(g["entries"]) for g in groups)
+    print(f"  {total} editions in the archive")
+
+    today_stamp = TODAY.strftime("%Y-%m-%d")
+
+    # Root copy: sibling editions live under archive/
+    with open("index.html", "w", encoding="utf-8") as fh:
+        fh.write(build_html(
+            market, macro_content, sectors, earnings, articles,
+            archive_groups=groups, in_archive=False, edition_date=today_stamp,
+        ))
+
+    # Archived copy: siblings are alongside it, so links drop the folder prefix
+    with open(f"archive/{today_stamp}.html", "w", encoding="utf-8") as fh:
+        fh.write(build_html(
+            market, macro_content, sectors, earnings, articles,
+            archive_groups=groups, in_archive=True, edition_date=today_stamp,
+        ))
+
+    with open("archive.html", "w", encoding="utf-8") as fh:
+        fh.write(build_archive_page(groups))
 
     stage("Sending email...")
     site_url = os.environ.get("SITE_URL", "").strip()
