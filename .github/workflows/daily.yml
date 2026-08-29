@@ -5,7 +5,7 @@ on:
     # 09:45 UTC = 5:45am ET (daylight time) / 4:45am ET (standard time).
     # GitHub cron is always UTC. Change to '45 10 * * 1-5' in November
     # if you want to hold 5:45am through the winter.
-    - cron: '45 9 * * 1-5'
+    - cron: '45 12 * * 1-5'
   workflow_dispatch:        # lets you trigger a build by hand from the Actions tab
 
 permissions:
