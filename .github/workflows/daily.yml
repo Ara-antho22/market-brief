@@ -1,12 +1,11 @@
 name: Build daily market brief
 
 on:
-  schedule:
-    # 09:45 UTC = 5:45am ET (daylight time) / 4:45am ET (standard time).
-    # GitHub cron is always UTC. Change to '45 10 * * 1-5' in November
-    # if you want to hold 5:45am through the winter.
-    - cron: '45 11 * * 1-5'
-  workflow_dispatch:        # lets you trigger a build by hand from the Actions tab
+  # No GitHub schedule. GitHub's built-in scheduler delays free-tier jobs by
+  # hours. The daily run is started by cron-job.org at 6:45am Central instead,
+  # through the workflow_dispatch trigger below. The Run workflow button in the
+  # Actions tab uses the same trigger.
+  workflow_dispatch:
 
 permissions:
   contents: write
