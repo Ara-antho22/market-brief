@@ -1358,12 +1358,32 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
 
 
 def send_email(subject, html_body):
-    """Send the brief via Gmail SMTP. Skips silently if not configured."""
+    """Send the brief via Gmail SMTP to every address in EMAIL_TO, all blind.
+
+    How the blind copy works: an email has two separate address lists. The
+    headers (To, Cc) are what recipients see. The SMTP envelope is what the mail
+    server actually delivers to. We put every address in the envelope only, and
+    no addresses at all in the visible headers. The To header uses the standard
+    "undisclosed-recipients:;" placeholder, so nobody, including the sender,
+    sees who else received it.
+
+    We deliberately do NOT add a Bcc header. With sendmail() and as_string(), a
+    Bcc header would be transmitted inside the message itself and could expose
+    the whole list to every recipient.
+
+    Skips silently if not configured. Failure never stops the build.
+    """
     user = os.environ.get("GMAIL_USER", "")
     password = os.environ.get("GMAIL_APP_PASSWORD", "")
-    recipients = [
-        a.strip() for a in os.environ.get("EMAIL_TO", "").split(",") if a.strip()
-    ]
+
+    # Deduplicate while keeping order, case-insensitively, so a repeated address
+    # doesn't receive two copies.
+    recipients, seen = [], set()
+    for a in os.environ.get("EMAIL_TO", "").split(","):
+        addr = a.strip()
+        if addr and addr.lower() not in seen:
+            seen.add(addr.lower())
+            recipients.append(addr)
 
     if not (user and password and recipients):
         print("  email not configured, skipping")
@@ -1376,14 +1396,18 @@ def send_email(subject, html_body):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"Market Brief <{user}>"
-    msg["To"] = ", ".join(recipients)
+    msg["To"] = "undisclosed-recipients:;"
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=45) as server:
             server.login(user, password)
-            server.sendmail(user, recipients, msg.as_string())
-        print(f"  sent to {len(recipients)} recipient(s)")
+            refused = server.sendmail(user, recipients, msg.as_string())
+        delivered = len(recipients) - len(refused or {})
+        print(f"  sent blind to {delivered} of {len(recipients)} recipient(s)")
+        if refused:
+            print(f"  ! {len(refused)} address(es) refused by the mail server; "
+                  f"check EMAIL_TO for typos")
         return True
     except Exception as e:
         print(f"  ! Email failed: {e}")
