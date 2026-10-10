@@ -8,6 +8,7 @@ API keys are read from environment variables (GitHub Secrets), never hardcoded.
 import os
 import json
 import html
+import base64
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -308,6 +309,110 @@ GLOSSARY = [
          "9:30am ET, when volume is lower and moves can be more volatile."),
     ]),
 ]
+
+
+# ----------------------------------------------------------------------------
+# Footer: disclaimer and LinkedIn
+# ----------------------------------------------------------------------------
+
+# Shown at the bottom of every page and every email. Edit the wording here and every
+# future edition picks it up; older archived editions are updated on the next run.
+DISCLAIMER_MAIN = ("For informational purposes only. Not investment advice. Please do your "
+                   "own research before making any investment decision.")
+DISCLAIMER_FINE = ("Summaries are generated automatically from published headlines and may "
+                   "contain errors or bias. Views expressed are my own and do not represent "
+                   "those of my employer.")
+
+LINKEDIN_URL = "https://www.linkedin.com/in/ian-anthony1"
+LINKEDIN_LABEL = "Connect with me"
+
+# The LinkedIn icon as inline SVG for the website.
+LINKEDIN_SVG = (
+    '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">'
+    '<rect width="24" height="24" rx="4" fill="currentColor"/>'
+    '<circle cx="6.9" cy="6.9" r="1.95" fill="#000"/>'
+    '<rect x="5.2" y="10" width="3.4" height="9" fill="#000"/>'
+    '<path d="M10.6 10h3.25v1.4c.55-.95 1.7-1.7 3.3-1.7 3.1 0 3.75 2 3.75 4.7V19h-3.4v-4'
+    'c0-1.1-.1-2.3-1.6-2.3s-1.85 1.15-1.85 2.25V19H10.6z" fill="#000"/></svg>'
+)
+
+FOOTER_CSS = """
+  footer.site-foot { text-align: center; font-size: 12.5px; line-height: 1.55;
+                     font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; }
+  footer.site-foot.standalone { margin-top: 56px; padding-top: 28px;
+                                border-top: 1px solid #3a3a3a; }
+  footer.site-foot a { color: #8a8a8a; }
+  footer.site-foot .back { margin: 0 0 14px; }
+  footer.site-foot .disc-main { color: #c4c4c4; font-weight: 600; margin: 0 0 6px; }
+  footer.site-foot .disc-fine { color: #8a8a8a; margin: 0 0 6px; }
+  footer.site-foot .built { color: #6a6a6a; font-size: 11.5px; margin: 0; }
+  footer.site-foot a.li-link {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 26px;
+    float: left; color: #8a8a8a; text-decoration: none; font-size: 12.5px;
+  }
+  footer.site-foot a.li-link:hover { color: #f2f2f2; }
+  footer.site-foot::after { content: ""; display: block; clear: both; }
+  /* On phones the Previous Editions tab is pinned to the bottom-left corner, so on
+     pages that have it, leave room for the LinkedIn link to sit above it. */
+  @media (max-width: 620px) {
+    .arc-toggle ~ .wrap footer.site-foot { padding-bottom: 110px; }
+  }
+"""
+
+
+def site_footer(built=None, back_href=None, standalone=False):
+    """Footer shared by every page: disclaimer, optional build time, LinkedIn link."""
+    back = (f'<p class="back"><a href="{html.escape(back_href)}">&larr; Back to the '
+            f'latest edition</a></p>' if back_href else "")
+    built_html = f'<p class="built">Built {html.escape(built)} ET.</p>' if built else ""
+    cls = "site-foot standalone" if standalone else "site-foot"
+    return f"""
+  <footer class="{cls}">
+    {back}
+    <p class="disc-main">{html.escape(DISCLAIMER_MAIN)}</p>
+    <p class="disc-fine">{html.escape(DISCLAIMER_FINE)}</p>
+    {built_html}
+    <a class="li-link" href="{html.escape(LINKEDIN_URL)}" target="_blank" rel="noopener">
+      {LINKEDIN_SVG}<span>{html.escape(LINKEDIN_LABEL)}</span></a>
+  </footer>"""
+
+
+# The same icon as a small PNG, written to linkedin.png on every build. Email clients
+# like Gmail won't show SVG or embedded images, so the email loads this file from the
+# published site instead.
+LINKEDIN_PNG_B64 = (
+    "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"
+)
 
 
 # ----------------------------------------------------------------------------
@@ -1361,6 +1466,7 @@ def build_glossary_page():
   .def p {{ margin:0 0 8px; }}
   .def p.gl-note {{ font-size:13.5px; color:var(--muted);
                     border-left:2px solid var(--rule); padding-left:10px; }}
+{FOOTER_CSS}
   @media (prefers-reduced-motion: reduce) {{
     * {{ animation:none !important; transition:none !important; }}
   }}
@@ -1374,24 +1480,30 @@ def build_glossary_page():
   <a class="back" href="index.html">&larr; Back to the latest edition</a>
   <hr class="rule">
   {groups}
+  {site_footer(standalone=True)}
 </div>
 </body>
 </html>"""
 
 
-def retrofit_archive_glossary_button():
-    """Give editions archived before the glossary existed the same top-right button.
+def retrofit_archive():
+    """Bring editions archived before a feature existed up to date.
 
-    Runs on every build but only edits files that don't have the button yet, so each
-    older edition is changed exactly once and later runs leave it alone. It adds the
-    button's styles before </head> and the button inside the masthead, and touches
-    nothing else on the page.
+    Runs on every build and is safe to repeat. For each archived edition it:
+      - adds the top-right Glossary button if the page doesn't have one yet
+      - replaces the footer with the current one (disclaimer and LinkedIn), keeping
+        that edition's original "Built" time, so a change to the wording in
+        DISCLAIMER_MAIN, DISCLAIMER_FINE or LINKEDIN_LABEL reaches past editions too
+    A file is only rewritten when something actually changed. Nothing else on the
+    page is touched.
     """
+    import re
     if not os.path.isdir("archive"):
         return 0
 
-    css = f"<style>{GLOSSARY_BTN_CSS}</style>\n</head>"
     btn = glossary_button("../glossary.html")
+    footer_re = re.compile(r"<footer[^>]*>.*?</footer>", re.S)
+    built_re = re.compile(r"Built\s+([0-9]{4}-[0-9]{2}-[0-9]{2}\s+[0-9]{2}:[0-9]{2})\s+ET")
     fixed = 0
     for fn in sorted(os.listdir("archive")):
         if not fn.endswith(".html"):
@@ -1399,19 +1511,30 @@ def retrofit_archive_glossary_button():
         path = os.path.join("archive", fn)
         try:
             with open(path, encoding="utf-8") as fh:
-                page = fh.read()
-            if 'class="gl-top"' in page:
-                continue
-            if '<header class="masthead">' not in page or "</head>" not in page:
-                continue
-            page = page.replace("</head>", css, 1)
-            page = page.replace('<header class="masthead">',
-                                f'<header class="masthead">\n    {btn}', 1)
-            with open(path, "w", encoding="utf-8") as fh:
-                fh.write(page)
-            fixed += 1
+                original = fh.read()
+            page = original
+
+            if 'class="gl-top"' not in page and '<header class="masthead">' in page:
+                page = page.replace("</head>", f"<style>{GLOSSARY_BTN_CSS}</style>\n</head>", 1)
+                page = page.replace('<header class="masthead">',
+                                    f'<header class="masthead">\n    {btn}', 1)
+
+            m = footer_re.search(page)
+            if m:
+                if "footer.site-foot" not in page:
+                    page = page.replace("</head>", f"<style>{FOOTER_CSS}</style>\n</head>", 1)
+                    m = footer_re.search(page)
+                b = built_re.search(m.group(0))
+                fresh = site_footer(built=b.group(1) if b else None,
+                                    back_href="../index.html").strip()
+                page = page[:m.start()] + fresh + page[m.end():]
+
+            if page != original:
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(page)
+                fixed += 1
         except Exception as e:
-            print(f"  ! Could not add glossary button to {fn}: {e}")
+            print(f"  ! Could not update {fn}: {e}")
     return fixed
 
 
@@ -1465,6 +1588,7 @@ def build_archive_page(groups):
                        justify-content:space-between; align-items:baseline; }}
   .arc-now {{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; }}
   .arc-empty {{ color:var(--muted); }}
+{FOOTER_CSS}
   @media (prefers-reduced-motion: reduce) {{
     * {{ animation:none !important; transition:none !important; }}
   }}
@@ -1478,6 +1602,7 @@ def build_archive_page(groups):
   <a class="back" href="index.html">&larr; Back to the latest edition</a>
   <hr class="rule">
   {listing}
+  {site_footer(standalone=True)}
 </div>
 </body>
 </html>"""
@@ -1649,6 +1774,22 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
             f'Glossary of terms</a></td></tr>'
         )
 
+    # LinkedIn in the bottom-left corner. The icon is a PNG hosted on the site because
+    # email clients won't display SVG or embedded images. Without SITE_URL there is
+    # nowhere to load it from, so the link is shown as text only.
+    icon_html = ""
+    if site_url:
+        base = site_url if site_url.endswith("/") else site_url + "/"
+        icon_html = (f'<img src="{esc(base)}linkedin.png" width="18" height="18" alt="LinkedIn" '
+                     f'style="display:inline-block;vertical-align:middle;border:0;'
+                     f'margin-right:7px;">')
+    linkedin_row = (
+        f'<tr><td align="left" style="padding-top:28px;font-size:12px;'
+        f'font-family:Arial,sans-serif;"><a href="{esc(LINKEDIN_URL)}" '
+        f'style="color:{MUTED};text-decoration:none;">{icon_html}'
+        f'<span style="vertical-align:middle;">{esc(LINKEDIN_LABEL)}</span></a></td></tr>'
+    )
+
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -1672,10 +1813,13 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
 
   {link_btn}
   {glossary_link}
-  <tr><td align="center" style="padding-top:24px;color:{MUTED};font-size:11px;
+  <tr><td align="center" style="padding-top:26px;color:#c4c4c4;font-size:11.5px;
+      font-weight:bold;line-height:1.5;font-family:Arial,sans-serif;">
+      {esc(DISCLAIMER_MAIN)}</td></tr>
+  <tr><td align="center" style="padding-top:5px;color:{MUTED};font-size:11px;
       line-height:1.5;font-family:Arial,sans-serif;">
-      Summaries are generated from published headlines and may contain errors.
-      Verify before acting on anything here.</td></tr>
+      {esc(DISCLAIMER_FINE)}</td></tr>
+  {linkedin_row}
 
 </table>
 </td></tr></table>
@@ -1934,10 +2078,9 @@ def build_html(market, macro_content, sectors, earnings, articles,
   }}
   .gl-cta-btn:hover {{ border-color: var(--ink); }}
 {GLOSSARY_BTN_CSS}
+{FOOTER_CSS}
 
   hr.rule {{ border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }}
-  footer {{ color: var(--muted); font-size: 12.5px; text-align: center; }}
-  footer a {{ color: var(--muted); }}
 
   @media (max-width: 620px) {{
     body {{ font-size: 16px; }}
@@ -1996,11 +2139,8 @@ def build_html(market, macro_content, sectors, earnings, articles,
 
   <hr class="rule">
 
-  <footer>
-    {f'<p><a href="{home_href}index.html">&larr; Back to the latest edition</a></p>' if in_archive else ''}
-    Built {TODAY.strftime('%Y-%m-%d %H:%M')} ET. Summaries are generated from published
-    headlines and may contain errors. Verify before acting on anything here.
-  </footer>
+  {site_footer(built=TODAY.strftime('%Y-%m-%d %H:%M'),
+               back_href=f"{home_href}index.html" if in_archive else None)}
 
 </div>
 {DRAWER_JS}
@@ -2093,9 +2233,12 @@ def main():
     with open("glossary.html", "w", encoding="utf-8") as fh:
         fh.write(build_glossary_page())
 
-    fixed = retrofit_archive_glossary_button()
+    with open("linkedin.png", "wb") as fh:
+        fh.write(base64.b64decode(LINKEDIN_PNG_B64))
+
+    fixed = retrofit_archive()
     if fixed:
-        print(f"  added the Glossary button to {fixed} older edition(s)")
+        print(f"  updated {fixed} older edition(s) with the current header and footer")
 
     stage("Sending email...")
     site_url = os.environ.get("SITE_URL", "").strip()
