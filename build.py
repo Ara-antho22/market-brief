@@ -173,7 +173,8 @@ LARGE_CAPS = {
     "UAL": "United Airlines", "LUV": "Southwest Airlines",
 }
 
-# Glossary shown at the bottom of every edition. Each term is (name, definition) or
+# Glossary, published as its own page (glossary.html) and linked from the top right of
+# every edition and from a note under the Markets Snapshot. Each term is (name, definition) or
 # (name, definition, note). The optional note explains how the brief itself measures
 # that item where it differs from the textbook instrument, and renders in smaller type.
 # To add a term, copy any line into the right category. To add a category, copy a
@@ -209,6 +210,14 @@ GLOSSARY = [
          "In this brief: tracked through the Xtrackers Harvest CSI 300 ETF (ASHR), which "
          "holds the 300 largest stocks across both the Shanghai and Shenzhen exchanges. "
          "It moves with mainland China broadly but is not the Shanghai Composite itself."),
+        ("MSCI Frontier Markets",
+         "An index of stocks in frontier markets: economies that are open to foreign "
+         "investors but smaller, less liquid, and less developed than emerging markets. "
+         "Because these are the riskiest corners of global equities, they tend to be "
+         "among the first places investors pull money from when risk appetite fades.",
+         "In this brief: tracked through the iShares MSCI Frontier and Select EM ETF "
+         "(FM), which also holds some smaller emerging markets, so it is a broad proxy "
+         "rather than the pure frontier index."),
     ]),
     ("Rates & Credit", [
         ("SOFR (Secured Overnight Financing Rate)",
@@ -234,6 +243,12 @@ GLOSSARY = [
          "corporate bonds. Because these issuers are considered safer, the spread is "
          "typically much smaller than HY OAS, and the gap between the two is itself a "
          "signal of how much the market is discriminating by credit quality."),
+        ("HYG (U.S. High Yield Corporate Bond ETF)",
+         "The iShares iBoxx $ High Yield Corporate Bond ETF, one of the largest and most "
+         "heavily traded funds holding below-investment-grade U.S. corporate bonds. "
+         "Because it trades all day like a stock, its price is a live read on high yield "
+         "sentiment. A falling price generally means spreads are widening, Treasury "
+         "yields are rising, or both."),
     ]),
     ("Volatility & Sentiment", [
         ("VIX",
@@ -1247,46 +1262,157 @@ def build_calendar(events, earnings):
   <section class="calendar">{ev_html}{earn_html}</section>"""
 
 
-def build_glossary():
-    """Collapsible glossary at the bottom of the page, closed by default."""
+# Styles for the top-right Glossary button. Kept as one plain string so the same CSS
+# goes into new editions and gets injected into older archived editions.
+GLOSSARY_BTN_CSS = """
+  header.masthead { position: relative; }
+  a.gl-top {
+    position: absolute; top: 0; right: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    line-height: 1.2; color: #8a8a8a; text-decoration: none;
+    border: 1px solid #3a3a3a; border-radius: 4px; padding: 6px 11px;
+  }
+  a.gl-top:hover { color: #f2f2f2; border-color: #f2f2f2; }
+  @media (max-width: 620px) { header.masthead { padding-top: 40px; } }
+"""
+
+
+def glossary_button(href):
+    """Small Glossary button in the top-right corner of the masthead."""
+    return f'<a class="gl-top" href="{html.escape(href)}">Glossary</a>'
+
+
+def glossary_note(href):
+    """Short pointer to the glossary, placed right under the Markets Snapshot."""
+    return f"""
+  <div class="gl-cta">
+    <p>Confused about what an acronym means? Check out our glossary to learn more
+    about a specific term.</p>
+    <a class="gl-cta-btn" href="{html.escape(href)}">Open the glossary &rarr;</a>
+  </div>"""
+
+
+def build_glossary_page():
+    """Standalone glossary page. Each term opens and closes on click."""
     groups = ""
     for category, terms in GLOSSARY:
         rows = ""
         for t in terms:
             name, definition = t[0], t[1]
             note = t[2] if len(t) > 2 else ""
-            note_html = f'<div class="gl-note">{html.escape(note)}</div>' if note else ""
-            rows += (f'<dt>{html.escape(name)}</dt>'
-                     f'<dd>{html.escape(definition)}{note_html}</dd>')
-        groups += f'<h3 class="gl-cat">{html.escape(category)}</h3><dl class="gl">{rows}</dl>'
+            note_html = f'<p class="gl-note">{html.escape(note)}</p>' if note else ""
+            rows += (f'<details class="term"><summary>{html.escape(name)}</summary>'
+                     f'<div class="def"><p>{html.escape(definition)}</p>{note_html}</div>'
+                     f'</details>')
+        groups += f'<div class="gl-cat">{html.escape(category)}</div>{rows}'
 
     count = sum(len(terms) for _, terms in GLOSSARY)
-    return f"""
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — Daily Market Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {{ --bg:#000; --ink:#f2f2f2; --muted:#8a8a8a; --rule:#3a3a3a; }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }}
+  .wrap {{ max-width:680px; margin:0 auto; padding:40px 22px 80px; }}
+  .eyebrow {{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; text-align:center;
+  }}
+  h1 {{
+    font-family:'Playfair Display', Georgia, serif; font-weight:900;
+    font-size:34px; text-align:center; margin:12px 0 6px;
+  }}
+  .count {{ text-align:center; color:var(--muted); font-size:13px; margin-bottom:8px; }}
+  .back {{ display:block; text-align:center; color:var(--muted); font-size:13.5px;
+           margin-bottom:26px; }}
+  .back:hover {{ color:var(--ink); }}
+  hr.rule {{ border:0; border-top:1px solid var(--rule); margin:0 0 8px; }}
+  .gl-cat {{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+    border-bottom:1px solid var(--rule); padding-bottom:6px; margin:34px 0 0;
+  }}
+  details.term {{ border-bottom:1px solid rgba(255,255,255,.08); }}
+  details.term summary {{
+    list-style:none; cursor:pointer; padding:12px 30px 12px 0; position:relative;
+    font-weight:600; font-size:16px;
+  }}
+  details.term summary::-webkit-details-marker {{ display:none; }}
+  details.term summary::after {{
+    content:"+"; position:absolute; right:4px; top:10px;
+    color:var(--muted); font-size:19px; font-weight:400;
+  }}
+  details.term[open] summary::after {{ content:"\\2212"; }}
+  details.term summary:hover {{ text-decoration:underline; }}
+  .def {{ padding:0 0 14px; font-size:15.5px; color:#d8d8d8; }}
+  .def p {{ margin:0 0 8px; }}
+  .def p.gl-note {{ font-size:13.5px; color:var(--muted);
+                    border-left:2px solid var(--rule); padding-left:10px; }}
+  @media (prefers-reduced-motion: reduce) {{
+    * {{ animation:none !important; transition:none !important; }}
+  }}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Daily Market Brief</div>
+  <h1>Glossary</h1>
+  <div class="count">{count} terms. Click any term to see its definition.</div>
+  <a class="back" href="index.html">&larr; Back to the latest edition</a>
   <hr class="rule">
-  <section id="glossary">
-    <h2>Glossary</h2>
-    <details class="gl-wrap" id="glossaryDetails">
-      <summary>Show all {count} terms</summary>
-      <div class="gl-body">{groups}</div>
-    </details>
-  </section>"""
+  {groups}
+</div>
+</body>
+</html>"""
 
 
-# Opens the glossary when someone follows a #glossary link, since a closed <details>
-# would otherwise leave them staring at a single "Show all terms" line.
-GLOSSARY_JS = """
-<script>
-(function () {
-  var d = document.getElementById('glossaryDetails');
-  if (!d) return;
-  function check() { if (location.hash === '#glossary') d.open = true; }
-  check();
-  window.addEventListener('hashchange', check);
-  document.querySelectorAll('a[href="#glossary"]').forEach(function (a) {
-    a.addEventListener('click', function () { d.open = true; });
-  });
-})();
-</script>"""
+def retrofit_archive_glossary_button():
+    """Give editions archived before the glossary existed the same top-right button.
+
+    Runs on every build but only edits files that don't have the button yet, so each
+    older edition is changed exactly once and later runs leave it alone. It adds the
+    button's styles before </head> and the button inside the masthead, and touches
+    nothing else on the page.
+    """
+    if not os.path.isdir("archive"):
+        return 0
+
+    css = f"<style>{GLOSSARY_BTN_CSS}</style>\n</head>"
+    btn = glossary_button("../glossary.html")
+    fixed = 0
+    for fn in sorted(os.listdir("archive")):
+        if not fn.endswith(".html"):
+            continue
+        path = os.path.join("archive", fn)
+        try:
+            with open(path, encoding="utf-8") as fh:
+                page = fh.read()
+            if 'class="gl-top"' in page:
+                continue
+            if '<header class="masthead">' not in page or "</head>" not in page:
+                continue
+            page = page.replace("</head>", css, 1)
+            page = page.replace('<header class="masthead">',
+                                f'<header class="masthead">\n    {btn}', 1)
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(page)
+            fixed += 1
+        except Exception as e:
+            print(f"  ! Could not add glossary button to {fn}: {e}")
+    return fixed
 
 
 def build_archive_page(groups):
@@ -1510,12 +1636,17 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
     )
 
     # The full glossary lives on the site; the email just points to it.
+    # Deliberately smaller and greyer than the "Read the full edition" button above it,
+    # so the two are never mistaken for each other.
     glossary_link = ""
     if site_url:
+        base = site_url if site_url.endswith("/") else site_url + "/"
         glossary_link = (
-            f'<tr><td align="center" style="padding:6px 0 0;font-size:12px;'
-            f'font-family:Arial,sans-serif;"><a href="{esc(site_url)}#glossary" '
-            f'style="color:{MUTED};">Glossary of terms</a></td></tr>'
+            f'<tr><td align="center" style="padding:4px 0 0;">'
+            f'<a href="{esc(base)}glossary.html" style="display:inline-block;'
+            f'padding:5px 12px;border:1px solid {RULE};color:{MUTED};'
+            f'text-decoration:none;font-size:11px;font-family:Arial,sans-serif;">'
+            f'Glossary of terms</a></td></tr>'
         )
 
     return f"""<!DOCTYPE html>
@@ -1622,6 +1753,7 @@ def build_html(market, macro_content, sectors, earnings, articles,
     # site root is one level up.
     href_prefix = "" if in_archive else "archive/"
     home_href = "../" if in_archive else ""
+    glossary_href = f"{home_href}glossary.html"
 
     drawer = build_drawer(
         archive_groups or [], href_prefix,
@@ -1793,18 +1925,15 @@ def build_html(market, macro_content, sectors, earnings, articles,
            font-variant-numeric: tabular-nums; }}
   .meta {{ color: var(--muted); font-size: 13px; }}
 
-  .snapshot-note a {{ color: var(--muted); }}
-  .gl-wrap {{ border-top: none; padding-top: 0; }}
-  .gl-wrap > summary {{ text-align: center; font-size: 13.5px; }}
-  .gl-body {{ padding-top: 4px; }}
-  h3.gl-cat {{ font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
-               color: var(--muted); border-bottom: 1px solid var(--rule);
-               padding-bottom: 6px; margin: 34px 0 4px; }}
-  dl.gl {{ margin: 0; }}
-  dl.gl dt {{ font-weight: 700; font-size: 15.5px; margin-top: 16px; }}
-  dl.gl dd {{ margin: 3px 0 0; font-size: 15px; color: #d8d8d8; }}
-  .gl-note {{ margin-top: 6px; font-size: 13px; color: var(--muted);
-              border-left: 2px solid var(--rule); padding-left: 10px; }}
+  .gl-cta {{ text-align: center; margin: 22px 0 0; }}
+  .gl-cta p {{ color: var(--muted); font-size: 13.5px; margin: 0 0 8px; }}
+  .gl-cta-btn {{
+    display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--ink);
+    text-decoration: none; border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 13px;
+  }}
+  .gl-cta-btn:hover {{ border-color: var(--ink); }}
+{GLOSSARY_BTN_CSS}
 
   hr.rule {{ border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }}
   footer {{ color: var(--muted); font-size: 12.5px; text-align: center; }}
@@ -1832,6 +1961,7 @@ def build_html(market, macro_content, sectors, earnings, articles,
 <div class="wrap">
 
   <header class="masthead">
+    {glossary_button(glossary_href)}
     <div class="eyebrow">Daily Market Brief</div>
     <h1>Morning Edition</h1>
     <div class="dateline">{date_long}</div>
@@ -1848,8 +1978,9 @@ def build_html(market, macro_content, sectors, earnings, articles,
     Sources: <a href="https://fred.stlouisfed.org/">FRED (Federal Reserve Bank of
     St.&nbsp;Louis)</a> and <a href="https://finnhub.io/">Finnhub</a>. Cells marked *
     use a listed ETF as a proxy for the underlying index; hover the asterisk for the
-    instrument used. Terms are defined in the <a href="#glossary">glossary</a>.
+    instrument used.
   </div>
+  {glossary_note(glossary_href)}
   {moving}
 
   <hr class="rule">
@@ -1862,7 +1993,6 @@ def build_html(market, macro_content, sectors, earnings, articles,
   <h2>Sector Update</h2>
   {micro or '<p class="muted">No sector entries this morning.</p>'}
   {calendar}
-  {build_glossary()}
 
   <hr class="rule">
 
@@ -1874,7 +2004,6 @@ def build_html(market, macro_content, sectors, earnings, articles,
 
 </div>
 {DRAWER_JS}
-{GLOSSARY_JS}
 </body>
 </html>"""
 
@@ -1960,6 +2089,13 @@ def main():
 
     with open("archive.html", "w", encoding="utf-8") as fh:
         fh.write(build_archive_page(groups))
+
+    with open("glossary.html", "w", encoding="utf-8") as fh:
+        fh.write(build_glossary_page())
+
+    fixed = retrofit_archive_glossary_button()
+    if fixed:
+        print(f"  added the Glossary button to {fixed} older edition(s)")
 
     stage("Sending email...")
     site_url = os.environ.get("SITE_URL", "").strip()
