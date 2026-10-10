@@ -22,7 +22,14 @@ ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 ANTHROPIC_MODEL = "claude-sonnet-5"
 
-ET = timezone(timedelta(hours=-4))  # Eastern Daylight Time
+# Eastern time that follows daylight saving automatically (EDT in summer, EST from
+# early November). Falls back to a fixed EDT offset only if the runner has no
+# timezone database, which GitHub's Ubuntu runners always do.
+try:
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+except Exception:
+    ET = timezone(timedelta(hours=-4))
 TODAY = datetime.now(ET)
 
 # Series pulled from FRED (authoritative, free, no rate limit).
@@ -165,6 +172,127 @@ LARGE_CAPS = {
     "VZ": "Verizon", "TMUS": "T-Mobile", "CMCSA": "Comcast", "DAL": "Delta Air Lines",
     "UAL": "United Airlines", "LUV": "Southwest Airlines",
 }
+
+# Glossary shown at the bottom of every edition. Each term is (name, definition) or
+# (name, definition, note). The optional note explains how the brief itself measures
+# that item where it differs from the textbook instrument, and renders in smaller type.
+# To add a term, copy any line into the right category. To add a category, copy a
+# whole ("Category", [...]) block.
+GLOSSARY = [
+    ("Indices & Benchmarks", [
+        ("S&P 500",
+         "A market-capitalization-weighted index of 500 of the largest publicly traded "
+         "U.S. companies, widely used as the primary benchmark for the overall U.S. "
+         "stock market."),
+        ("NASDAQ Composite",
+         "A market-cap-weighted index of nearly every stock listed on the Nasdaq "
+         "exchange, heavily weighted toward technology companies."),
+        ("Dow Jones Industrial Average",
+         "A price-weighted index of 30 large, established U.S. companies, one of the "
+         "oldest and most widely cited market benchmarks despite covering far fewer "
+         "companies than the S&P 500."),
+        ("Russell 2000",
+         "An index of 2,000 small-capitalization U.S. companies, used as the standard "
+         "benchmark for small-cap stock performance."),
+        ("Nikkei 225",
+         "A price-weighted index of 225 major companies listed on the Tokyo Stock "
+         "Exchange, Japan’s primary stock market benchmark."),
+        ("FTSE 100",
+         "An index of the 100 largest companies listed on the London Stock Exchange by "
+         "market capitalization, the UK’s primary market benchmark."),
+        ("Euro Stoxx 50",
+         "An index of 50 of the largest companies across the Eurozone, used as a "
+         "benchmark for the broader European market."),
+        ("Shanghai Composite",
+         "An index tracking all stocks listed on the Shanghai Stock Exchange, a primary "
+         "gauge of mainland Chinese equity markets.",
+         "In this brief: tracked through the Xtrackers Harvest CSI 300 ETF (ASHR), which "
+         "holds the 300 largest stocks across both the Shanghai and Shenzhen exchanges. "
+         "It moves with mainland China broadly but is not the Shanghai Composite itself."),
+    ]),
+    ("Rates & Credit", [
+        ("SOFR (Secured Overnight Financing Rate)",
+         "A benchmark interest rate based on the cost of borrowing cash overnight using "
+         "U.S. Treasury securities as collateral. It replaced LIBOR as the standard "
+         "reference rate for dollar-denominated loans and derivatives."),
+        ("2-Year Treasury Yield / 10-Year Treasury Yield",
+         "The return an investor earns for holding U.S. government debt over that time "
+         "horizon. The 2-year is more sensitive to near-term Fed policy; the 10-year "
+         "reflects longer-run growth and inflation expectations."),
+        ("2s10s (Yield Curve Spread)",
+         "The difference between the 10-year and 2-year Treasury yields. A positive "
+         "spread is the normal state; when it turns negative (“inverts”), it has "
+         "historically preceded recessions, because it signals investors expect the Fed "
+         "to cut rates in response to future weakness."),
+        ("HY OAS (High Yield Option-Adjusted Spread)",
+         "The extra yield investors demand to hold high yield (below investment-grade) "
+         "corporate bonds instead of risk-free Treasuries of the same maturity. A rising "
+         "spread signals investors are charging more to take on credit risk, usually "
+         "because they see it increasing."),
+        ("IG OAS (Investment Grade Option-Adjusted Spread)",
+         "The same measure as HY OAS, but for investment-grade (higher credit-quality) "
+         "corporate bonds. Because these issuers are considered safer, the spread is "
+         "typically much smaller than HY OAS, and the gap between the two is itself a "
+         "signal of how much the market is discriminating by credit quality."),
+    ]),
+    ("Volatility & Sentiment", [
+        ("VIX",
+         "The ticker symbol for the market’s premier volatility benchmark. It acts as a "
+         "real-time gauge of expected 30-day stock market volatility, calculated directly "
+         "from the prices of S&P 500 index options."),
+    ]),
+    ("Currencies & Commodities", [
+        ("DXY (U.S. Dollar Index)",
+         "A measure of the U.S. dollar’s value against a weighted basket of six major "
+         "foreign currencies, primarily the euro. It rises when the dollar strengthens "
+         "broadly and falls when it weakens.",
+         "In this brief: the snapshot shows the Federal Reserve’s Broad Trade-Weighted "
+         "Dollar Index rather than DXY, because FRED publishes it free. It weighs about "
+         "26 currencies by U.S. trade share, so it usually moves the same direction as "
+         "DXY but not by the same amount, and the levels are not comparable."),
+        ("WTI (West Texas Intermediate)",
+         "A grade of crude oil that serves as the primary pricing benchmark for oil "
+         "produced and consumed in the United States."),
+        ("Brent Crude",
+         "A grade of crude oil extracted from the North Sea that serves as the primary "
+         "pricing benchmark for roughly two-thirds of the world’s internationally traded "
+         "oil. It’s the number most global financial media reference when they say “the "
+         "price of oil.”"),
+    ]),
+    ("Macro Data", [
+        ("CPI (Consumer Price Index)",
+         "A measure of the average change over time in prices paid by consumers for a "
+         "basket of goods and services. It’s the most widely followed gauge of inflation "
+         "in the U.S. economy."),
+        ("Unemployment Rate",
+         "The percentage of the labor force that is jobless and actively seeking work, "
+         "released monthly by the Bureau of Labor Statistics as one of the most closely "
+         "watched health indicators for the economy."),
+        ("FOMC (Federal Open Market Committee)",
+         "The branch of the Federal Reserve responsible for setting U.S. monetary policy, "
+         "most notably the federal funds rate. It meets eight times a year, and its "
+         "decisions move every market covered in this brief."),
+    ]),
+    ("Structural Terms", [
+        ("ETF (Exchange-Traded Fund)",
+         "A fund that holds a basket of assets, like stocks or bonds, but trades on an "
+         "exchange throughout the day like a single stock. Many indices in this brief "
+         "that don’t have direct daily data are tracked through a representative ETF "
+         "instead."),
+        ("Basis point",
+         "A unit equal to one-hundredth of a percentage point (0.01%). Used throughout "
+         "fixed income and rates markets because moves are often small; a “25 basis "
+         "point cut” means a 0.25 percentage point reduction."),
+        ("Sector ETF (XLE, XLK, XLV, XLI, XLRE, XLY, XLP)",
+         "A fund that tracks all the companies within one S&P 500 sector. XLE covers "
+         "energy, XLK technology, XLV health care, XLI industrials, XLRE real estate, XLY "
+         "consumer discretionary, and XLP consumer staples. Each gives a single number "
+         "for how that sector traded on a given day."),
+        ("Pre-market",
+         "The trading session that takes place before the official market open at "
+         "9:30am ET, when volume is lower and moves can be more volatile."),
+    ]),
+]
 
 
 # ----------------------------------------------------------------------------
@@ -434,7 +562,13 @@ claim, leave it out and say less.
 - Clean prose. No bullet points inside a brief or detail field. No em-dashes used as \
 sentence connectors.
 - Where the material supports it, connect the story to financing conditions, credit \
-spreads, and capital structure, since that is her seat."""
+spreads, and capital structure, since that is her seat.
+- Calibrate intensity to the actual size of the move. Reserve words like "plunge," \
+"crater," "surge," "rout," "collapse," and "crisis" for moves that are genuinely large \
+by that asset's own standards. A half-percent index move or a modest spread widening is \
+described plainly, in the actual numbers, not dressed up to sound more dramatic than it \
+was. She will trust the newsletter less, not more, if an ordinary session reads like a \
+historic one."""
 
 MACRO_PROMPT = VOICE + """
 
@@ -500,9 +634,13 @@ it is displayed separately above this. Write 'Sanctions reprice the crude curve'
     "Paragraph one: the dominant story in full, with specifics from the headlines.",
     "Paragraph two: which names or subsectors are driving the move and why the \
 dispersion looks the way it does.",
-    "Paragraph three: the balance sheet and financing angle, meaning how this \
-environment affects the sector's cost of capital, refinancing needs, leverage \
-tolerance, or M&A appetite.",
+    "Paragraph three: if, and only if, today's headlines actually give you something \
+to say about it, the balance sheet and financing angle, meaning how this environment \
+affects the sector's cost of capital, refinancing needs, leverage tolerance, or M&A \
+appetite. If the headlines don't support that angle for this sector today, write about \
+something else the headlines do support instead, such as positioning, valuation, or \
+regulatory and policy exposure. Never force the financing angle in when nothing in the \
+material points there.",
     "Paragraph four: the setup from here and the specific catalyst that would change it."
   ],
   "sources": [{{"name": "Publication", "url": "https://..."}}]
@@ -552,7 +690,10 @@ covered elsewhere in the newsletter.
 - Drop duplicates. When several outlets carry the same story, keep the best one.
 - Cover different ground. Do not return four angles on the same event.
 - The "why" is the whole value. Name the transmission channel: rates, oil, the dollar, \
-risk appetite, credit spreads, supply chains."""
+risk appetite, credit spreads, supply chains.
+- Keep the "why" measured. No hype words like "plunge," "surge," "rout," or "crisis" \
+unless the story genuinely is one. State what it changes plainly; the reader is a \
+markets professional and discounts anything that sounds breathless."""
 
 
 def build_article_pool(world_news, macro_news, wire_news=None):
@@ -838,7 +979,8 @@ def build_snapshot(m):
         [cell("WTI Crude Oil", f("wti"), source_url=fu("wti")),
          cell("Gold Spot Price /Oz", f("gold"), pn("gold"), pu("gold")),
          cell("U.S. High Yield Corporate Bond ETF", f("hyg"), pn("hyg"), pu("hyg"))],
-        [cell("U.S. Dollar Index", f("dxy"), "Broad trade-weighted dollar index", fu("dxy")),
+        [cell("U.S. Dollar Index (Broad)", f("dxy"),
+              "Fed Broad Trade-Weighted Dollar Index, not DXY; see glossary", fu("dxy")),
          cell("10-Year Treasury Yield", f("ust10"), source_url=fu("ust10"), value_suffix="%"),
          cell("CBOE Volatility Index", f("vix"), source_url=fu("vix"))],
         [cpi_cell, unemp_cell,
@@ -1105,6 +1247,48 @@ def build_calendar(events, earnings):
   <section class="calendar">{ev_html}{earn_html}</section>"""
 
 
+def build_glossary():
+    """Collapsible glossary at the bottom of the page, closed by default."""
+    groups = ""
+    for category, terms in GLOSSARY:
+        rows = ""
+        for t in terms:
+            name, definition = t[0], t[1]
+            note = t[2] if len(t) > 2 else ""
+            note_html = f'<div class="gl-note">{html.escape(note)}</div>' if note else ""
+            rows += (f'<dt>{html.escape(name)}</dt>'
+                     f'<dd>{html.escape(definition)}{note_html}</dd>')
+        groups += f'<h3 class="gl-cat">{html.escape(category)}</h3><dl class="gl">{rows}</dl>'
+
+    count = sum(len(terms) for _, terms in GLOSSARY)
+    return f"""
+  <hr class="rule">
+  <section id="glossary">
+    <h2>Glossary</h2>
+    <details class="gl-wrap" id="glossaryDetails">
+      <summary>Show all {count} terms</summary>
+      <div class="gl-body">{groups}</div>
+    </details>
+  </section>"""
+
+
+# Opens the glossary when someone follows a #glossary link, since a closed <details>
+# would otherwise leave them staring at a single "Show all terms" line.
+GLOSSARY_JS = """
+<script>
+(function () {
+  var d = document.getElementById('glossaryDetails');
+  if (!d) return;
+  function check() { if (location.hash === '#glossary') d.open = true; }
+  check();
+  window.addEventListener('hashchange', check);
+  document.querySelectorAll('a[href="#glossary"]').forEach(function (a) {
+    a.addEventListener('click', function () { d.open = true; });
+  });
+})();
+</script>"""
+
+
 def build_archive_page(groups):
     """Standalone list of every past edition. This is what mobile links to."""
     listing = archive_list_html(groups, "archive/", None)
@@ -1215,7 +1399,7 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
          quote_cell("MSCI Frontier*", m.get("frontier"))],
         [quote_cell("WTI Crude", m.get("wti")), quote_cell("Gold /oz*", m.get("gold")),
          quote_cell("U.S. HY Bond ETF*", m.get("hyg"))],
-        [quote_cell("U.S. Dollar Index", m.get("dxy")),
+        [quote_cell("U.S. Dollar Index (Broad)", m.get("dxy")),
          quote_cell("10-Year Treasury", m.get("ust10"), "%"),
          quote_cell("VIX", m.get("vix"))],
         [quote_cell("U.S. CPI", m.get("cpi_index"), yoy=True),
@@ -1325,6 +1509,15 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
         f'font-family:Arial,sans-serif;">Read the full edition &rarr;</a></td></tr>'
     )
 
+    # The full glossary lives on the site; the email just points to it.
+    glossary_link = ""
+    if site_url:
+        glossary_link = (
+            f'<tr><td align="center" style="padding:6px 0 0;font-size:12px;'
+            f'font-family:Arial,sans-serif;"><a href="{esc(site_url)}#glossary" '
+            f'style="color:{MUTED};">Glossary of terms</a></td></tr>'
+        )
+
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -1347,6 +1540,7 @@ def build_email_html(market, macro_content, sectors, earnings, articles, site_ur
   {body}
 
   {link_btn}
+  {glossary_link}
   <tr><td align="center" style="padding-top:24px;color:{MUTED};font-size:11px;
       line-height:1.5;font-family:Arial,sans-serif;">
       Summaries are generated from published headlines and may contain errors.
@@ -1599,6 +1793,19 @@ def build_html(market, macro_content, sectors, earnings, articles,
            font-variant-numeric: tabular-nums; }}
   .meta {{ color: var(--muted); font-size: 13px; }}
 
+  .snapshot-note a {{ color: var(--muted); }}
+  .gl-wrap {{ border-top: none; padding-top: 0; }}
+  .gl-wrap > summary {{ text-align: center; font-size: 13.5px; }}
+  .gl-body {{ padding-top: 4px; }}
+  h3.gl-cat {{ font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+               color: var(--muted); border-bottom: 1px solid var(--rule);
+               padding-bottom: 6px; margin: 34px 0 4px; }}
+  dl.gl {{ margin: 0; }}
+  dl.gl dt {{ font-weight: 700; font-size: 15.5px; margin-top: 16px; }}
+  dl.gl dd {{ margin: 3px 0 0; font-size: 15px; color: #d8d8d8; }}
+  .gl-note {{ margin-top: 6px; font-size: 13px; color: var(--muted);
+              border-left: 2px solid var(--rule); padding-left: 10px; }}
+
   hr.rule {{ border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }}
   footer {{ color: var(--muted); font-size: 12.5px; text-align: center; }}
   footer a {{ color: var(--muted); }}
@@ -1641,7 +1848,7 @@ def build_html(market, macro_content, sectors, earnings, articles,
     Sources: <a href="https://fred.stlouisfed.org/">FRED (Federal Reserve Bank of
     St.&nbsp;Louis)</a> and <a href="https://finnhub.io/">Finnhub</a>. Cells marked *
     use a listed ETF as a proxy for the underlying index; hover the asterisk for the
-    instrument used.
+    instrument used. Terms are defined in the <a href="#glossary">glossary</a>.
   </div>
   {moving}
 
@@ -1655,6 +1862,7 @@ def build_html(market, macro_content, sectors, earnings, articles,
   <h2>Sector Update</h2>
   {micro or '<p class="muted">No sector entries this morning.</p>'}
   {calendar}
+  {build_glossary()}
 
   <hr class="rule">
 
@@ -1666,6 +1874,7 @@ def build_html(market, macro_content, sectors, earnings, articles,
 
 </div>
 {DRAWER_JS}
+{GLOSSARY_JS}
 </body>
 </html>"""
 
