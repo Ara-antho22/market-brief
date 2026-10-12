@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossary — Daily Market Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#000; --ink:#f2f2f2; --muted:#8a8a8a; --rule:#3a3a3a; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:680px; margin:0 auto; padding:40px 22px 80px; }
+  .eyebrow {
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; text-align:center;
+  }
+  h1 {
+    font-family:'Playfair Display', Georgia, serif; font-weight:900;
+    font-size:34px; text-align:center; margin:12px 0 6px;
+  }
+  .count { text-align:center; color:var(--muted); font-size:13px; margin-bottom:8px; }
+  .back { display:block; text-align:center; color:var(--muted); font-size:13.5px;
+           margin-bottom:26px; }
+  .back:hover { color:var(--ink); }
+  hr.rule { border:0; border-top:1px solid var(--rule); margin:0 0 8px; }
+  .gl-cat {
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+    border-bottom:1px solid var(--rule); padding-bottom:6px; margin:34px 0 0;
+  }
+  details.term { border-bottom:1px solid rgba(255,255,255,.08); }
+  details.term summary {
+    list-style:none; cursor:pointer; padding:12px 30px 12px 0; position:relative;
+    font-weight:600; font-size:16px;
+  }
+  details.term summary::-webkit-details-marker { display:none; }
+  details.term summary::after {
+    content:"+"; position:absolute; right:4px; top:10px;
+    color:var(--muted); font-size:19px; font-weight:400;
+  }
+  details.term[open] summary::after { content:"\2212"; }
+  details.term summary:hover { text-decoration:underline; }
+  .def { padding:0 0 14px; font-size:15.5px; color:#d8d8d8; }
+  .def p { margin:0 0 8px; }
+  .def p.gl-note { font-size:13.5px; color:var(--muted);
+                    border-left:2px solid var(--rule); padding-left:10px; }
+
+  footer.site-foot { text-align: center; font-size: 12.5px; line-height: 1.55;
+                     font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; }
+  footer.site-foot.standalone { margin-top: 56px; padding-top: 28px;
+                                border-top: 1px solid #3a3a3a; }
+  footer.site-foot a { color: #8a8a8a; }
+  footer.site-foot .back { margin: 0 0 14px; }
+  footer.site-foot .disc-main { color: #c4c4c4; font-weight: 600; margin: 0 0 6px; }
+  footer.site-foot .disc-fine { color: #8a8a8a; margin: 0 0 6px; }
+  footer.site-foot .built { color: #6a6a6a; font-size: 11.5px; margin: 0; }
+  footer.site-foot a.li-link {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 26px;
+    float: left; color: #8a8a8a; text-decoration: none; font-size: 12.5px;
+  }
+  footer.site-foot a.li-link:hover { color: #f2f2f2; }
+  footer.site-foot::after { content: ""; display: block; clear: both; }
+  /* On phones the Previous Editions tab is pinned to the bottom-left corner, so on
+     pages that have it, leave room for the LinkedIn link to sit above it. */
+  @media (max-width: 620px) {
+    .arc-toggle ~ .wrap footer.site-foot { padding-bottom: 110px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Daily Market Brief</div>
+  <h1>Glossary</h1>
+  <div class="count">26 terms. Click any term to see its definition.</div>
+  <a class="back" href="index.html">&larr; Back to the latest edition</a>
+  <hr class="rule">
+  <div class="gl-cat">Indices &amp; Benchmarks</div><details class="term"><summary>S&amp;P 500</summary><div class="def"><p>A market-capitalization-weighted index of 500 of the largest publicly traded U.S. companies, widely used as the primary benchmark for the overall U.S. stock market.</p></div></details><details class="term"><summary>NASDAQ Composite</summary><div class="def"><p>A market-cap-weighted index of nearly every stock listed on the Nasdaq exchange, heavily weighted toward technology companies.</p></div></details><details class="term"><summary>Dow Jones Industrial Average</summary><div class="def"><p>A price-weighted index of 30 large, established U.S. companies, one of the oldest and most widely cited market benchmarks despite covering far fewer companies than the S&amp;P 500.</p></div></details><details class="term"><summary>Russell 2000</summary><div class="def"><p>An index of 2,000 small-capitalization U.S. companies, used as the standard benchmark for small-cap stock performance.</p></div></details><details class="term"><summary>Nikkei 225</summary><div class="def"><p>A price-weighted index of 225 major companies listed on the Tokyo Stock Exchange, Japan’s primary stock market benchmark.</p></div></details><details class="term"><summary>FTSE 100</summary><div class="def"><p>An index of the 100 largest companies listed on the London Stock Exchange by market capitalization, the UK’s primary market benchmark.</p></div></details><details class="term"><summary>Euro Stoxx 50</summary><div class="def"><p>An index of 50 of the largest companies across the Eurozone, used as a benchmark for the broader European market.</p></div></details><details class="term"><summary>Shanghai Composite</summary><div class="def"><p>An index tracking all stocks listed on the Shanghai Stock Exchange, a primary gauge of mainland Chinese equity markets.</p><p class="gl-note">In this brief: tracked through the Xtrackers Harvest CSI 300 ETF (ASHR), which holds the 300 largest stocks across both the Shanghai and Shenzhen exchanges. It moves with mainland China broadly but is not the Shanghai Composite itself.</p></div></details><details class="term"><summary>MSCI Frontier Markets</summary><div class="def"><p>An index of stocks in frontier markets: economies that are open to foreign investors but smaller, less liquid, and less developed than emerging markets. Because these are the riskiest corners of global equities, they tend to be among the first places investors pull money from when risk appetite fades.</p><p class="gl-note">In this brief: tracked through the iShares MSCI Frontier and Select EM ETF (FM), which also holds some smaller emerging markets, so it is a broad proxy rather than the pure frontier index.</p></div></details><div class="gl-cat">Rates &amp; Credit</div><details class="term"><summary>SOFR (Secured Overnight Financing Rate)</summary><div class="def"><p>A benchmark interest rate based on the cost of borrowing cash overnight using U.S. Treasury securities as collateral. It replaced LIBOR as the standard reference rate for dollar-denominated loans and derivatives.</p></div></details><details class="term"><summary>2-Year Treasury Yield / 10-Year Treasury Yield</summary><div class="def"><p>The return an investor earns for holding U.S. government debt over that time horizon. The 2-year is more sensitive to near-term Fed policy; the 10-year reflects longer-run growth and inflation expectations.</p></div></details><details class="term"><summary>2s10s (Yield Curve Spread)</summary><div class="def"><p>The difference between the 10-year and 2-year Treasury yields. A positive spread is the normal state; when it turns negative (“inverts”), it has historically preceded recessions, because it signals investors expect the Fed to cut rates in response to future weakness.</p></div></details><details class="term"><summary>HY OAS (High Yield Option-Adjusted Spread)</summary><div class="def"><p>The extra yield investors demand to hold high yield (below investment-grade) corporate bonds instead of risk-free Treasuries of the same maturity. A rising spread signals investors are charging more to take on credit risk, usually because they see it increasing.</p></div></details><details class="term"><summary>IG OAS (Investment Grade Option-Adjusted Spread)</summary><div class="def"><p>The same measure as HY OAS, but for investment-grade (higher credit-quality) corporate bonds. Because these issuers are considered safer, the spread is typically much smaller than HY OAS, and the gap between the two is itself a signal of how much the market is discriminating by credit quality.</p></div></details><details class="term"><summary>HYG (U.S. High Yield Corporate Bond ETF)</summary><div class="def"><p>The iShares iBoxx $ High Yield Corporate Bond ETF, one of the largest and most heavily traded funds holding below-investment-grade U.S. corporate bonds. Because it trades all day like a stock, its price is a live read on high yield sentiment. A falling price generally means spreads are widening, Treasury yields are rising, or both.</p></div></details><div class="gl-cat">Volatility &amp; Sentiment</div><details class="term"><summary>VIX</summary><div class="def"><p>The ticker symbol for the market’s premier volatility benchmark. It acts as a real-time gauge of expected 30-day stock market volatility, calculated directly from the prices of S&amp;P 500 index options.</p></div></details><div class="gl-cat">Currencies &amp; Commodities</div><details class="term"><summary>DXY (U.S. Dollar Index)</summary><div class="def"><p>A measure of the U.S. dollar’s value against a weighted basket of six major foreign currencies, primarily the euro. It rises when the dollar strengthens broadly and falls when it weakens.</p><p class="gl-note">In this brief: the snapshot shows the Federal Reserve’s Broad Trade-Weighted Dollar Index rather than DXY, because FRED publishes it free. It weighs about 26 currencies by U.S. trade share, so it usually moves the same direction as DXY but not by the same amount, and the levels are not comparable.</p></div></details><details class="term"><summary>WTI (West Texas Intermediate)</summary><div class="def"><p>A grade of crude oil that serves as the primary pricing benchmark for oil produced and consumed in the United States.</p></div></details><details class="term"><summary>Brent Crude</summary><div class="def"><p>A grade of crude oil extracted from the North Sea that serves as the primary pricing benchmark for roughly two-thirds of the world’s internationally traded oil. It’s the number most global financial media reference when they say “the price of oil.”</p></div></details><div class="gl-cat">Macro Data</div><details class="term"><summary>CPI (Consumer Price Index)</summary><div class="def"><p>A measure of the average change over time in prices paid by consumers for a basket of goods and services. It’s the most widely followed gauge of inflation in the U.S. economy.</p></div></details><details class="term"><summary>Unemployment Rate</summary><div class="def"><p>The percentage of the labor force that is jobless and actively seeking work, released monthly by the Bureau of Labor Statistics as one of the most closely watched health indicators for the economy.</p></div></details><details class="term"><summary>FOMC (Federal Open Market Committee)</summary><div class="def"><p>The branch of the Federal Reserve responsible for setting U.S. monetary policy, most notably the federal funds rate. It meets eight times a year, and its decisions move every market covered in this brief.</p></div></details><div class="gl-cat">Structural Terms</div><details class="term"><summary>ETF (Exchange-Traded Fund)</summary><div class="def"><p>A fund that holds a basket of assets, like stocks or bonds, but trades on an exchange throughout the day like a single stock. Many indices in this brief that don’t have direct daily data are tracked through a representative ETF instead.</p></div></details><details class="term"><summary>Basis point</summary><div class="def"><p>A unit equal to one-hundredth of a percentage point (0.01%). Used throughout fixed income and rates markets because moves are often small; a “25 basis point cut” means a 0.25 percentage point reduction.</p></div></details><details class="term"><summary>Sector ETF (XLE, XLK, XLV, XLI, XLRE, XLY, XLP)</summary><div class="def"><p>A fund that tracks all the companies within one S&amp;P 500 sector. XLE covers energy, XLK technology, XLV health care, XLI industrials, XLRE real estate, XLY consumer discretionary, and XLP consumer staples. Each gives a single number for how that sector traded on a given day.</p></div></details><details class="term"><summary>Pre-market</summary><div class="def"><p>The trading session that takes place before the official market open at 9:30am ET, when volume is lower and moves can be more volatile.</p></div></details>
+  
+  <footer class="site-foot standalone">
+    
+    <p class="disc-main">For informational purposes only. Not investment advice. Please do your own research before making any investment decision.</p>
+    <p class="disc-fine">Summaries are generated automatically from published headlines and may contain errors or bias. Views expressed are my own and do not represent those of my employer.</p>
+    
+    <a class="li-link" href="https://www.linkedin.com/in/ian-anthony1" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="4" fill="currentColor"/><circle cx="6.9" cy="6.9" r="1.95" fill="#000"/><rect x="5.2" y="10" width="3.4" height="9" fill="#000"/><path d="M10.6 10h3.25v1.4c.55-.95 1.7-1.7 3.3-1.7 3.1 0 3.75 2 3.75 4.7V19h-3.4v-4c0-1.1-.1-2.3-1.6-2.3s-1.85 1.15-1.85 2.25V19H10.6z" fill="#000"/></svg><span>Connect with me</span></a>
+  </footer>
+</div>
+</body>
+</html>
