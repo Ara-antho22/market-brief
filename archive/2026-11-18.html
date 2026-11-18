@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Market Brief — November 18, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000; --ink: #f2f2f2; --muted: #8a8a8a; --rule: #3a3a3a;
+    --up: #4ade80; --down: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 17px; line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 22px 90px; }
+
+  header.masthead { text-align: center; padding-bottom: 26px;
+                     border-bottom: 1px solid var(--rule); }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+              color: var(--muted); font-weight: 600; }
+  h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 900;
+        font-size: 40px; line-height: 1.12; margin: 14px 0 8px; }
+  .dateline { color: var(--muted); font-size: 14px; }
+
+  h2 { font-family: 'Playfair Display', Georgia, serif; font-weight: 700;
+        font-size: 30px; text-align: center; margin: 52px 0 26px; }
+  h3 { font-size: 19px; font-weight: 700; margin: 36px 0 8px; }
+  h4 { font-size: 14px; font-weight: 700; margin: 20px 0 6px; letter-spacing: .04em; }
+
+  .intro p { margin: 0 0 16px; }
+
+  table.snapshot { width: 100%; border-collapse: collapse; table-layout: fixed;
+                    font-size: 13px; line-height: 1.4; }
+  table.snapshot td.cell { border: 1px solid var(--ink); padding: 8px 9px;
+                            vertical-align: top; width: 33.33%; }
+  .cell-label { font-weight: 700; font-size: 12.5px; }
+  .cell-value { font-size: 13px; margin-top: 2px; }
+  .cell-na { color: var(--muted); font-style: italic; font-size: 12px; }
+  .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+  .muted { color: var(--muted); }
+  .proxy { color: var(--muted); font-weight: 400; cursor: help; }
+  .cell-src { display: inline-block; margin-top: 3px; font-size: 10.5px;
+               color: var(--muted); text-decoration: none;
+               border-bottom: 1px dotted var(--muted); }
+  .cell-src:hover { color: var(--ink); }
+  .snapshot-note { text-align: center; color: var(--muted); font-size: 12.5px;
+                    margin-top: 14px; }
+
+  .entry { padding-bottom: 6px; }
+  .entry-label {
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin: 36px 0 2px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .entry-label + h3 { margin-top: 0; }
+  .brief { margin: 0 0 10px; }
+
+  /* ---- Archive drawer ---- */
+  .arc-toggle {
+    position: fixed; left: 0; top: 96px; z-index: 40;
+    background: var(--bg); color: var(--muted);
+    border: 1px solid var(--rule); border-left: none;
+    border-radius: 0 4px 4px 0; padding: 10px 12px;
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase;
+    writing-mode: vertical-rl; cursor: pointer; text-decoration: none;
+  }
+  .arc-toggle:hover { color: var(--ink); border-color: var(--ink); }
+  .arc-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 50;
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .arc-scrim.open { opacity: 1; }
+  .arc-drawer {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 300px; max-width: 84vw;
+    background: #0a0a0a; border-right: 1px solid var(--rule); z-index: 60;
+    transform: translateX(-100%); transition: transform .22s ease;
+    display: flex; flex-direction: column;
+  }
+  .arc-drawer.open { transform: translateX(0); }
+  .arc-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 18px 14px; border-bottom: 1px solid var(--rule);
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink); font-weight: 700;
+  }
+  .arc-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 24px; line-height: 1; cursor: pointer; padding: 0 2px;
+  }
+  .arc-close:hover { color: var(--ink); }
+  .arc-body { overflow-y: auto; padding: 14px 18px 30px; }
+  .arc-count { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; }
+  .arc-month {
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700;
+    border-bottom: 1px solid var(--rule); padding-bottom: 5px; margin: 18px 0 6px;
+  }
+  ul.arc-list { list-style: none; padding: 0; margin: 0; }
+  .arc-item { font-size: 14.5px; padding: 5px 0; }
+  .arc-item a { color: var(--ink); text-decoration: none; }
+  .arc-item a:hover { text-decoration: underline; }
+  .arc-item.current {
+    color: var(--muted); display: flex; justify-content: space-between;
+    align-items: baseline; gap: 8px;
+  }
+  .arc-now { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
+  .arc-empty { color: var(--muted); font-size: 14px; }
+  .desktop-only { display: block; }
+  .mobile-only { display: none; }
+  .tag { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+          border: 1px solid currentColor; border-radius: 3px; padding: 1px 6px;
+          vertical-align: middle; white-space: nowrap; }
+  details { border-top: 1px solid var(--rule); padding-top: 8px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600;
+             letter-spacing: .04em; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: " ↓"; }
+  details[open] summary::after { content: " ↑"; }
+  summary:hover { color: var(--ink); }
+  .detail { padding-top: 10px; font-size: 16px; color: #d8d8d8; }
+  .detail p { margin: 0 0 14px; }
+  .srcs { font-size: 12.5px; color: var(--muted); }
+  .srcs a { color: var(--muted); }
+
+  .section-note { text-align: center; color: var(--muted); font-size: 13.5px;
+                   margin: -14px 0 24px; }
+  ol.art-list { list-style: none; counter-reset: art; padding: 0; margin: 0; }
+  li.art { counter-increment: art; position: relative; padding: 14px 0 14px 34px;
+            border-bottom: 1px solid rgba(255,255,255,.08); }
+  li.art::before { content: counter(art, decimal-leading-zero); position: absolute;
+                    left: 0; top: 16px; font-size: 12px; font-weight: 700;
+                    color: var(--muted); font-variant-numeric: tabular-nums; }
+  .art-head { display: block; font-size: 16.5px; font-weight: 600; line-height: 1.4;
+               color: var(--ink); text-decoration: none; }
+  .art-head:hover { text-decoration: underline; }
+  .art-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .art-why { font-size: 14.5px; color: #c4c4c4; margin-top: 6px;
+              border-left: 2px solid var(--rule); padding-left: 10px; }
+
+  .cal-list { padding-left: 20px; }
+  .cal-list li { margin-bottom: 8px; }
+  .cal-day { margin-bottom: 4px; }
+  ul.earn-list { list-style: none; padding: 0; margin: 0 0 6px; }
+  ul.earn-list li { font-size: 15px; padding: 3px 0;
+                     border-bottom: 1px solid rgba(255,255,255,.06); }
+  .tick { display: inline-block; min-width: 62px; font-weight: 700;
+           font-variant-numeric: tabular-nums; }
+  .meta { color: var(--muted); font-size: 13px; }
+
+  .gl-cta { text-align: center; margin: 22px 0 0; }
+  .gl-cta p { color: var(--muted); font-size: 13.5px; margin: 0 0 8px; }
+  .gl-cta-btn {
+    display: inline-block; font-size: 12.5px; font-weight: 600; color: var(--ink);
+    text-decoration: none; border: 1px solid var(--rule); border-radius: 4px;
+    padding: 6px 13px;
+  }
+  .gl-cta-btn:hover { border-color: var(--ink); }
+
+  header.masthead { position: relative; }
+  a.gl-top {
+    position: absolute; top: 0; right: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    line-height: 1.2; color: #8a8a8a; text-decoration: none;
+    border: 1px solid #3a3a3a; border-radius: 4px; padding: 6px 11px;
+  }
+  a.gl-top:hover { color: #f2f2f2; border-color: #f2f2f2; }
+  @media (max-width: 620px) { header.masthead { padding-top: 40px; } }
+
+
+  footer.site-foot { text-align: center; font-size: 12.5px; line-height: 1.55;
+                     font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; }
+  footer.site-foot.standalone { margin-top: 56px; padding-top: 28px;
+                                border-top: 1px solid #3a3a3a; }
+  footer.site-foot a { color: #8a8a8a; }
+  footer.site-foot .back { margin: 0 0 14px; }
+  footer.site-foot .disc-main { color: #c4c4c4; font-weight: 600; margin: 0 0 6px; }
+  footer.site-foot .disc-fine { color: #8a8a8a; margin: 0 0 6px; }
+  footer.site-foot .built { color: #6a6a6a; font-size: 11.5px; margin: 0; }
+  footer.site-foot a.li-link {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 26px;
+    float: left; color: #8a8a8a; text-decoration: none; font-size: 12.5px;
+  }
+  footer.site-foot a.li-link:hover { color: #f2f2f2; }
+  footer.site-foot::after { content: ""; display: block; clear: both; }
+  /* On phones the Previous Editions tab is pinned to the bottom-left corner, so on
+     pages that have it, leave room for the LinkedIn link to sit above it. */
+  @media (max-width: 620px) {
+    .arc-toggle ~ .wrap footer.site-foot { padding-bottom: 110px; }
+  }
+
+
+  hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 52px 0; }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    h1 { font-size: 30px; } h2 { font-size: 24px; }
+    table.snapshot, table.snapshot tbody, table.snapshot tr, table.snapshot td.cell {
+      display: block; width: 100%; }
+    table.snapshot td.cell { border-top: none; }
+    table.snapshot tr:first-child td.cell:first-child { border-top: 1px solid var(--ink); }
+    .tick { min-width: 54px; }
+    .desktop-only { display: none; }
+    .mobile-only { display: block; }
+    .arc-toggle { top: auto; bottom: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <button class="arc-toggle desktop-only" id="arcToggle" aria-expanded="false"
+          aria-controls="arcDrawer">Previous Editions</button>
+  <a class="arc-toggle mobile-only" href="../archive.html">Previous Editions</a>
+
+  <div class="arc-scrim" id="arcScrim" hidden></div>
+  <aside class="arc-drawer" id="arcDrawer" aria-label="Previous editions" hidden>
+    <div class="arc-head">
+      <span>Previous Editions</span>
+      <button class="arc-close" id="arcClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="arc-body">
+      <div class="arc-count">75 editions</div>
+      <div class="arc-month">November 2026</div><ul class="arc-list"><li class="arc-item current">Wednesday 11/18<span class="arc-now">reading</span></li><li class="arc-item"><a href="2026-11-17.html">Tuesday 11/17</a></li><li class="arc-item"><a href="2026-11-16.html">Monday 11/16</a></li><li class="arc-item"><a href="2026-11-13.html">Friday 11/13</a></li><li class="arc-item"><a href="2026-11-12.html">Thursday 11/12</a></li><li class="arc-item"><a href="2026-11-11.html">Wednesday 11/11</a></li><li class="arc-item"><a href="2026-11-10.html">Tuesday 11/10</a></li><li class="arc-item"><a href="2026-11-09.html">Monday 11/9</a></li><li class="arc-item"><a href="2026-11-06.html">Friday 11/6</a></li><li class="arc-item"><a href="2026-11-05.html">Thursday 11/5</a></li><li class="arc-item"><a href="2026-11-04.html">Wednesday 11/4</a></li><li class="arc-item"><a href="2026-11-03.html">Tuesday 11/3</a></li><li class="arc-item"><a href="2026-11-02.html">Monday 11/2</a></li></ul><div class="arc-month">October 2026</div><ul class="arc-list"><li class="arc-item"><a href="2026-10-30.html">Friday 10/30</a></li><li class="arc-item"><a href="2026-10-29.html">Thursday 10/29</a></li><li class="arc-item"><a href="2026-10-28.html">Wednesday 10/28</a></li><li class="arc-item"><a href="2026-10-27.html">Tuesday 10/27</a></li><li class="arc-item"><a href="2026-10-26.html">Monday 10/26</a></li><li class="arc-item"><a href="2026-10-23.html">Friday 10/23</a></li><li class="arc-item"><a href="2026-10-22.html">Thursday 10/22</a></li><li class="arc-item"><a href="2026-10-21.html">Wednesday 10/21</a></li><li class="arc-item"><a href="2026-10-20.html">Tuesday 10/20</a></li><li class="arc-item"><a href="2026-10-19.html">Monday 10/19</a></li><li class="arc-item"><a href="2026-10-16.html">Friday 10/16</a></li><li class="arc-item"><a href="2026-10-15.html">Thursday 10/15</a></li><li class="arc-item"><a href="2026-10-14.html">Wednesday 10/14</a></li><li class="arc-item"><a href="2026-10-13.html">Tuesday 10/13</a></li><li class="arc-item"><a href="2026-10-12.html">Monday 10/12</a></li><li class="arc-item"><a href="2026-10-09.html">Friday 10/9</a></li><li class="arc-item"><a href="2026-10-08.html">Thursday 10/8</a></li><li class="arc-item"><a href="2026-10-07.html">Wednesday 10/7</a></li><li class="arc-item"><a href="2026-10-06.html">Tuesday 10/6</a></li><li class="arc-item"><a href="2026-10-05.html">Monday 10/5</a></li><li class="arc-item"><a href="2026-10-02.html">Friday 10/2</a></li><li class="arc-item"><a href="2026-10-01.html">Thursday 10/1</a></li></ul><div class="arc-month">September 2026</div><ul class="arc-list"><li class="arc-item"><a href="2026-09-30.html">Wednesday 9/30</a></li><li class="arc-item"><a href="2026-09-29.html">Tuesday 9/29</a></li><li class="arc-item"><a href="2026-09-28.html">Monday 9/28</a></li><li class="arc-item"><a href="2026-09-25.html">Friday 9/25</a></li><li class="arc-item"><a href="2026-09-24.html">Thursday 9/24</a></li><li class="arc-item"><a href="2026-09-23.html">Wednesday 9/23</a></li><li class="arc-item"><a href="2026-09-22.html">Tuesday 9/22</a></li><li class="arc-item"><a href="2026-09-21.html">Monday 9/21</a></li><li class="arc-item"><a href="2026-09-18.html">Friday 9/18</a></li><li class="arc-item"><a href="2026-09-17.html">Thursday 9/17</a></li><li class="arc-item"><a href="2026-09-16.html">Wednesday 9/16</a></li><li class="arc-item"><a href="2026-09-15.html">Tuesday 9/15</a></li><li class="arc-item"><a href="2026-09-14.html">Monday 9/14</a></li><li class="arc-item"><a href="2026-09-11.html">Friday 9/11</a></li><li class="arc-item"><a href="2026-09-10.html">Thursday 9/10</a></li><li class="arc-item"><a href="2026-09-09.html">Wednesday 9/9</a></li><li class="arc-item"><a href="2026-09-08.html">Tuesday 9/8</a></li><li class="arc-item"><a href="2026-09-07.html">Monday 9/7</a></li><li class="arc-item"><a href="2026-09-04.html">Friday 9/4</a></li><li class="arc-item"><a href="2026-09-03.html">Thursday 9/3</a></li><li class="arc-item"><a href="2026-09-02.html">Wednesday 9/2</a></li><li class="arc-item"><a href="2026-09-01.html">Tuesday 9/1</a></li></ul><div class="arc-month">August 2026</div><ul class="arc-list"><li class="arc-item"><a href="2026-08-31.html">Monday 8/31</a></li><li class="arc-item"><a href="2026-08-28.html">Friday 8/28</a></li><li class="arc-item"><a href="2026-08-26.html">Wednesday 8/26</a></li><li class="arc-item"><a href="2026-08-25.html">Tuesday 8/25</a></li><li class="arc-item"><a href="2026-08-24.html">Monday 8/24</a></li><li class="arc-item"><a href="2026-08-21.html">Friday 8/21</a></li><li class="arc-item"><a href="2026-08-20.html">Thursday 8/20</a></li><li class="arc-item"><a href="2026-08-19.html">Wednesday 8/19</a></li><li class="arc-item"><a href="2026-08-18.html">Tuesday 8/18</a></li><li class="arc-item"><a href="2026-08-17.html">Monday 8/17</a></li><li class="arc-item"><a href="2026-08-14.html">Friday 8/14</a></li><li class="arc-item"><a href="2026-08-13.html">Thursday 8/13</a></li><li class="arc-item"><a href="2026-08-12.html">Wednesday 8/12</a></li><li class="arc-item"><a href="2026-08-11.html">Tuesday 8/11</a></li><li class="arc-item"><a href="2026-08-10.html">Monday 8/10</a></li><li class="arc-item"><a href="2026-08-05.html">Wednesday 8/5</a></li><li class="arc-item"><a href="2026-08-04.html">Tuesday 8/4</a></li><li class="arc-item"><a href="2026-08-03.html">Monday 8/3</a></li></ul>
+    </div>
+  </aside>
+<div class="wrap">
+
+  <header class="masthead">
+    <a class="gl-top" href="../glossary.html">Glossary</a>
+    <div class="eyebrow">Daily Market Brief</div>
+    <h1>Morning Edition</h1>
+    <div class="dateline">Wednesday, November 18, 2026</div>
+  </header>
+
+  <h2>Newsletter Summary</h2>
+  <div class="intro"><p>Equities sold off broadly but not dramatically: the S&amp;P 500 fell 1.92% to 7,416.59, the Dow dropped 1.64% to 50,759.42, and the Russell 2000 lost 1.43%, while the Nasdaq held up better at -0.74%. The VIX jumped 18.70% to 22.91, a real one-day repricing of near-term risk though still far from stress-era levels. Credit moved with equities but unevenly: the high-yield OAS widened 11bp to 3.34% while investment-grade spreads were essentially flat at 0.90, pointing to selective de-risking in lower-quality paper rather than a systemic event. Treasuries caught a modest bid even as Fed officials talked tougher, with the 10-year yield easing a few basis points to 5.12% and the 2-year slipping to 4.83%, suggesting the equity selloff pulled in enough duration demand to offset hawkish Fedspeak from Musalem and Waller. UK inflation added to the higher-for-longer narrative, rising to a one-year high of 3.6% on record fuel prices, and European bourses fell in sympathy with London and New York (FTSE -1.35%, Eurostoxx -1.42%). None of today&#x27;s moves are historically large on their own, but they are stacking in the same direction: rates staying restrictive longer than hoped, and credit starting to discriminate accordingly.</p></div>
+
+  <hr class="rule">
+
+  <h2>Markets Snapshot</h2>
+  <table class="snapshot"><tr><td class="cell"><div class="cell-label">S&amp;P 500</div><div class="cell-value">7,416.59 <span class="down">-1.92% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/SP500" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">NASDAQ Composite</div><div class="cell-value">24,328.38 <span class="down">-0.74% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/NASDAQCOM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Dow Jones</div><div class="cell-value">50,759.42 <span class="down">-1.64% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DJIA" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">Russell 2000<span class="proxy" title="Tracked via iShares Russell 2000 ETF as a proxy">*</span></div><div class="cell-value">269.05 <span class="down">-1.43% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/IWM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">FTSE 100<span class="proxy" title="Tracked via iShares MSCI United Kingdom ETF as a proxy">*</span></div><div class="cell-value">46.94 <span class="down">-1.35% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/EWU" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Euro Stoxx 50<span class="proxy" title="Tracked via SPDR EURO STOXX 50 ETF as a proxy">*</span></div><div class="cell-value">65.11 <span class="down">-1.42% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/FEZ" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">Nikkei 225</div><div class="cell-value">59,024.28 <span class="up">+0.28% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/NIKKEI225" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Shanghai Composite<span class="proxy" title="Tracked via Xtrackers Harvest CSI 300 ETF as a proxy">*</span></div><div class="cell-value">29.82 <span class="down">-0.27% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/ASHR" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">MSCI Frontier Markets</div><div class="cell-na">unavailable</div></td></tr><tr><td class="cell"><div class="cell-label">WTI Crude Oil</div><div class="cell-value">89.62 <span class="flat">+0.00% &ndash;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DCOILWTICO" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Gold Spot Price /Oz<span class="proxy" title="Tracked via SPDR Gold Shares ETF as a proxy">*</span></div><div class="cell-value">352.48 <span class="down">-0.13% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/GLD" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">U.S. High Yield Corporate Bond ETF<span class="proxy" title="Tracked via iShares iBoxx High Yield Corporate Bond ETF as a proxy">*</span></div><div class="cell-value">76.63 <span class="down">-0.13% &darr;</span></div><a class="cell-src" href="https://finnhub.io/quote/HYG" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">U.S. Dollar Index (Broad)<span class="proxy" title="Fed Broad Trade-Weighted Dollar Index, not DXY; see glossary">*</span></div><div class="cell-value">122.65 <span class="up">+0.09% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">10-Year Treasury Yield</div><div class="cell-value">5.12% <span class="down">-0.58% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DGS10" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">CBOE Volatility Index</div><div class="cell-value">22.91 <span class="up">+18.70% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/VIXCLS" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">U.S. Consumer Price Index</div><div class="cell-na">unavailable</div></td><td class="cell"><div class="cell-label">U.S. Unemployment Rate</div><div class="cell-value">4.1% <span class="muted">(-0.1 pp)</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/UNRATE" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">U.S. Secured Overnight Financing Rate</div><div class="cell-value">3.92% <span class="down">-0.25% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/SOFR" target="_blank" rel="noopener">source</a></td></tr><tr><td class="cell"><div class="cell-label">High Yield OAS Spread</div><div class="cell-value">3.34% <span class="up">+3.41% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">Investment Grade OAS Spread</div><div class="cell-value">0.90% <span class="up">+1.12% &uarr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/BAMLC0A0CM" target="_blank" rel="noopener">source</a></td><td class="cell"><div class="cell-label">2-Year Treasury Yield</div><div class="cell-value">4.83% <span class="down">-1.02% &darr;</span></div><a class="cell-src" href="https://fred.stlouisfed.org/series/DGS2" target="_blank" rel="noopener">source</a></td></tr></table>
+  <div class="snapshot-note">
+    Sources: <a href="https://fred.stlouisfed.org/">FRED (Federal Reserve Bank of
+    St.&nbsp;Louis)</a> and <a href="https://finnhub.io/">Finnhub</a>. Cells marked *
+    use a listed ETF as a proxy for the underlying index; hover the asterisk for the
+    instrument used.
+  </div>
+  
+  <div class="gl-cta">
+    <p>Confused about what an acronym means? Check out our glossary to learn more
+    about a specific term.</p>
+    <a class="gl-cta-btn" href="../glossary.html">Open the glossary &rarr;</a>
+  </div>
+  
+  <hr class="rule">
+  <h2>Moving the Market</h2>
+  <p class="section-note">World events with the reach to move markets, and the line on
+  why each one matters.</p>
+  <ol class="art-list">
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMisgFBVV95cUxNMEJSYmJOTF9ISXdkYWVNd0Z3RnJvQnRjSlhEVWJ4bWo1UVVvblNOUnczc0FtOUlSODM5UzRNOUF5T3lIYTNrRVZKNEZTaVFQcnMwaG9JSWdnNkJmRVVtcTluWmFEU1k0dFVVVDJ4SWlEcUNpWEo1aktKYzFGblgxTldZSGVNRjV3N3VyMVNFelYxQ1d4Zlo3LXdQN2E4RUFuNjB4UWdYX1FxQ3pERUdCenJ3?oc=5" target="_blank" rel="noopener">Iran fires at Kuwait after US strike on Iranian island - Reuters</a>
+          <div class="art-meta">Reuters · 14h ago</div>
+          <div class="art-why">Iran strikes Kuwait after US hits Qeshm Island, raising risk of Gulf shipping disruption and oil supply shock.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMi9wJBVV95cUxQY2kyd3BuQUJ6NzcwTDhnNV9heVlCMUpTcHk3bzlnSW1EUkxHM21Rdmd3WFlNVWJRV0dZTTlUcEc0YjMtVU9iNUZ5RlFKVWFkRmNEVGJXaEM5M3lMLXJFdk9RVzB3V3ZaSzJiOFlfLXI4TU55aTdMQXNpNVRwdzgxQUdDVEI3Z2kybG0zX2l5YnVnaTJzdzBZRWpJR2VPNlhKSzdkaHo5QXFROWFMdGRUWTFOWi0yVzc0a0V6Q2ZScXNManliYkRlNmxCMG9DTkNTbjFkbHNSMU1adEtycVk5MWdnRmhLc05rUnFXTWtkbzNTc0RfLWQ2dFBidUp2ZkZicno3QXJpWkNHTWM2MHBjSWRDVjN2aHpEZEdja1JubTlsTjZFejM3c0ctQ2lxY2pHNm1SdzF4Q0ZGcVVzX0lCWFN2cEwyZU9Mcks4b0RmVE1MMm9SQXNRcGZhRjZVS0p5RDUxWWVvaTRqMTdpckp3TXNBaTR0NkE?oc=5" target="_blank" rel="noopener">China threatens &quot;countermeasures&quot; on the face of new AI GPU rental and export restrictions — Beijing threatens retaliation ahead of Thursday&#x27;s Xi Jinping meeting, Sino-American trade war may be renewed for a new season</a>
+          <div class="art-meta">Tom&#x27;s Hardware · 2h ago</div>
+          <div class="art-why">Beijing threatens retaliation over new AI chip export curbs days before Xi-Trump meeting, threatening trade truce and risk appetite.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMic0FVX3lxTFBzWDFOdXo0OXlKWUhLU3BOand5VTlOc3ltNGFDNk5JYjk3dFNoUkp5Y2t1cVBHSlVNNHRFMkpZSkh1YzhiQm5yWTEzSDNFMzZiWlBrOE5qRjd2Q19OTDZXcFJHNnlpeG9ObEtvaXR2cGNpcFk?oc=5" target="_blank" rel="noopener">Record diesel prices drive UK inflation to 1-year high of 3.6%</a>
+          <div class="art-meta">CNBC · 6h ago</div>
+          <div class="art-why">UK inflation hits 3.6%, a one-year high, narrowing BoE&#x27;s room to cut rates and pressuring gilt yields.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://news.google.com/rss/articles/CBMivwFBVV95cUxONlE5MkU2R0ZHZmVES3lZRXd0anBhR25DRkJOcTM5UU1INjc2VXVuMTFZSG9ONE9HTUdCTGpiVnE2bTdxNmQ5a0JuZWZwVlNFM3dKc0JiZ3U4OElZRWtkLTFOU20tMGZDNVRWMFk5YjdsTzlZdkxNRGV5dl9QWjF3YW5SMV9RdVJUUGNqcmpuSzhNT25wYllhWVcwSXIzYU5acEZkRmlMbUdiQl91NXpnbG95M2NiVmdCYjVuUlFJdw?oc=5" target="_blank" rel="noopener">Fed’s Musalem Says Several Rate Hikes Likely Needed Before Spring 2027</a>
+          <div class="art-meta">WSJ · 1d ago</div>
+          <div class="art-why">Fed&#x27;s Musalem signals more hikes needed into 2027, pushing back on rate-cut expectations and lifting front-end yields.</div>
+        </li>
+        <li class="art">
+          <a class="art-head" href="https://www.cnbc.com/2026/11/17/wall-streets-fear-gauge-is-surging-again-and-this-time-its-not-just-about-ai-jitters.html" target="_blank" rel="noopener">Wall Street&#x27;s fear gauge is surging again and this time it&#x27;s not just about AI jitters</a>
+          <div class="art-meta">CNBC · 16h ago</div>
+          <div class="art-why">VIX rising four straight days signals broadening risk-off move beyond tech, a shift in overall market risk appetite.</div>
+        </li></ol>
+
+  <hr class="rule">
+
+  <h2>Macro Update</h2>
+  
+    <article class="entry">
+      
+      <h3>Hawkish Fedspeak Meets a Risk-Off Tape</h3>
+      <p class="brief">St. Louis Fed&#x27;s Musalem said several more rate hikes are likely needed before spring 2027, and CNBC reported Fed officials including Governor Waller are positioned to raise again in December with inflation still above target. Equities sold off in response, with the S&amp;P down 1.92% and the VIX up 18.70% to 22.91. Credit widened too, but only in high yield, a sign the stress is concentrated in lower-quality balance sheets rather than systemic.</p>
+      <details id="macro-0">
+        <summary>Read more</summary>
+        <div class="detail"><p>Musalem&#x27;s comment that several hikes are likely needed before spring 2027 landed alongside CNBC reporting that Fed officials are set to raise again in December, with continued above-target inflation potentially pushing the committee toward a more aggressive stance. Powell separately confirmed he will stay on the Fed&#x27;s board after his term expires next month, removing one source of personnel uncertainty but not changing the policy signal. The S&amp;P 500 fell 1.92% to 7,416.59, the Dow fell 1.64%, the Russell 2000 fell 1.43%, and the VIX jumped 18.70% to 22.91.</p><p>The mechanism here is discount-rate driven. With SOFR at 3.92% and the 2-year at 4.83%, the policy backdrop is already restrictive, and Musalem&#x27;s and Waller&#x27;s comments remove the near-term prospect of relief. That keeps the discount rate applied to long-duration equity cash flows elevated, compressing multiples more than it changes earnings expectations, and the vol jump reflects markets repricing tail risk into the December FOMC meeting rather than a fundamental growth shock.</p><p>Credit told a more selective story: the HY OAS widened 11bp to 3.34% while IG OAS was essentially unchanged at 0.90%, up just 1bp. That divergence is consistent with the Fidelity note on the renewed appeal of floating-rate loans given rates are not falling as previously assumed, and it means the hit is landing on leveraged, floating-rate-exposed capital structures first. Issuers that were underwriting a 2027 cutting cycle into their refinancing plans now face a longer wait at a higher cost of capital.</p><p>Watch today&#x27;s FOMC minutes release for the internal vote split behind the hawkish rhetoric, and watch whether the HY-IG spread gap keeps widening into the December meeting or stabilizes once the minutes are digested. A continued widening in HY alone, without IG following, would confirm this is a leverage-and-duration story rather than a broad credit event.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMivwFBVV95cUxONlE5MkU2R0ZHZmVES3lZRXd0anBhR25DRkJOcTM5UU1INjc2VXVuMTFZSG9ONE9HTUdCTGpiVnE2bTdxNmQ5a0JuZWZwVlNFM3dKc0JiZ3U4OElZRWtkLTFOU20tMGZDNVRWMFk5YjdsTzlZdkxNRGV5dl9QWjF3YW5SMV9RdVJUUGNqcmpuSzhNT25wYllhWVcwSXIzYU5acEZkRmlMbUdiQl91NXpnbG95M2NiVmdCYjVuUlFJdw?oc=5" target="_blank" rel="noopener">WSJ</a> · <a href="https://www.cnbc.com/2026/11/18/federal-reserve-governor-christopher-waller.html" target="_blank" rel="noopener">CNBC</a> · <a href="https://news.google.com/rss/articles/CBMikAFBVV95cUxOVTRuNnNUUkdLNnBuVk9RQTBiS25xcTVBVVpjeFpTaDFUWjJuWFl4QjBkUnp0YkozM3ZXUXRfQ1RSTW1kU2h0OXZiU0M2MHJUQWZBdDNnWVU1am1yb1UxRWlpYWlpN1Y5VUFwd1oxUjF0UlFMeEt3SUx4UURpb1ZpYXY1c0lkYThrLUZtVlpUSWnSAZYBQVVfeXFMUEQwcFlXdjlTV3lqejM2WFFIQ25UWlhUM1FQNjIzTGtGV2ZQaElPZ2Izd0gwR2lLZ1pSdTZhWDVXMTg4d0V6RGxZdnZSak9walllOHRDOFlUT2pYSUJrdjc0NFYyekpfdjVIQUpVaDZjRGpJMlVwLXFHdFhnYzN5b2g3cWpZNkl5Ty11U29pbHllLUNLVjdR?oc=5" target="_blank" rel="noopener">ABC News</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      
+      <h3>UK Inflation Hits a One-Year High While the Labor Market Softens</h3>
+      <p class="brief">UK CPI rose to 3.6%, a one-year high, driven by record petrol and diesel prices, even as separate data showed UK wage growth slowing and job vacancies at their lowest since 2021. StoneX framed the combination as pulling the Bank of England in opposite directions. This is a supply-side inflation print landing on top of a softening labor market, the exact mix central banks have no clean single tool to address.</p>
+      <details id="macro-1">
+        <summary>Read more</summary>
+        <div class="detail"><p>UK CPI climbed to 3.6%, its highest in a year, with the Guardian, CNBC and WSJ all attributing the move to record petrol and diesel prices. That landed alongside jobs data described by Bloomberg as a mixed bag: wage growth slowing and payrolls cut, with Reuters adding that job vacancies fell to their lowest level since 2021. ABC News noted the inflation print keeps the possibility of a second straight BoE rate hike alive.</p><p>The transmission mechanism matters here because energy-driven, cost-push inflation does not respond to rate hikes the way demand-driven inflation does, yet the BoE has already signaled it may hike again regardless. That raises financing costs for UK corporates at the exact moment the labor data show wage growth, and by extension consumer demand, losing momentum, a margin squeeze from both directions rather than one the central bank can target cleanly.</p><p>The FTSE fell 1.35% today, among the weaker major indices, and Reuters Breakingviews described a sharp transatlantic divide in inflation data, meaning UK and US policy paths could diverge in restrictiveness even as both central banks face hawkish pressure. That divergence matters for GBP funding costs and for UK high-yield issuers, particularly consumer-facing names exposed simultaneously to higher input costs and softer wage-driven demand.</p><p>Watch the next UK CPI and labor prints and the BoE&#x27;s next decision for whether policymakers weight the energy print over the labor softening. Gilt yields and GBP-denominated credit spreads are the cleanest read on whether markets are pricing that second straight hike StoneX flagged as live.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMimgFBVV95cUxNamlMSFR1VS1LcjJjd253VGlsM1lUa0ZjZXJjclZ3ajdqZTdaMnc3dUdhcDd6RV9XWnNSYm1EM1BGTDZvTUkxTHgzeWw2TldJYm1JQlN1UHlhRkZJalpGZEFqT0lWNFR4N0pfSWVxZTg2LUJYRUhCMFhYTW5RVnh0dXlXcHcyRDctMWxZSGlaT3Bhc2x6SXR2REV3?oc=5" target="_blank" rel="noopener">The Guardian</a> · <a href="https://news.google.com/rss/articles/CBMilgFBVV95cUxNeW5Jb0ZqQ1hLSlZCUmJPczQycG5oV1NjeGlTZHZqY2F6aER6MkJ4MnUxMXNmQjZpTlFadlgzV2lTSVBYSFhuLUtSTzRucllid1ZpSnkwUGFKVlBFVTMyLWVrcnRIRzkzRDk0WTZFck1HaU5lRlFqUDhQeEVDSnZIc1UyNk5ULThvVmdVSHEwdkFBSjQ2MEE?oc=5" target="_blank" rel="noopener">Reuters</a> · <a href="https://news.google.com/rss/articles/CBMioAFBVV95cUxOZDR1YlJvNzF4dnlLUG1kZ2M3LXFmelMzMFp4bk5VeXVaQmtsbkRHYU03b2YyWjU3a2RMSXo2MGlyVWtSTVFMNW9vS3NGSnBaWXZqXzZKOUR6akFWMTZOTFNZRXRmdmNKbmRTUXpBOGxGR3FaNE5CSllLTUZZTEk0U1VpTHBvWi1HWmRRYzhhSTl2NS1nVGJ2bUQ0YUkwR3Yx?oc=5" target="_blank" rel="noopener">StoneX</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      
+      <h3>Nvidia Turmoil Starts to Show Up in the AI Credit Story</h3>
+      <p class="brief">Reuters wrote that Nvidia turmoil marks the end of easy money for the AI trade, after CNBC reported a congressional commission found China&#x27;s military is seeking Nvidia&#x27;s advanced chips for AI, news landing just as Nvidia has been rocked by its CEO&#x27;s resignation following reports of an affair with a suspected Chinese spy. This matters because the AI capex cycle has been heavily debt-financed, and confidence in the equity story underwrites favorable terms for that debt. The Nasdaq&#x27;s relatively smaller 0.74% decline today suggests the damage so far is contained rather than cascading.</p>
+      <details id="macro-2">
+        <summary>Read more</summary>
+        <div class="detail"><p>Reuters framed the current Nvidia turmoil as marking the end of easy money for the AI trade. CNBC separately reported that a congressional commission found China&#x27;s military is seeking Nvidia&#x27;s advanced chips for AI capabilities, a finding issued as Nvidia has been rocked by its CEO&#x27;s resignation after reports of an affair with a suspected Chinese spy. The Nasdaq fell 0.74% today, a smaller decline than the S&amp;P&#x27;s 1.92% or the Dow&#x27;s 1.64%, suggesting the fallout has not broadened into a general tech selloff yet.</p><p>The mechanism runs through financing cost. AI infrastructure and data-center buildouts have been funded through a mix of leveraged loans and high-yield and investment-grade issuance, with favorable spread levels underwritten by confidence in the durability of the capex cycle and the equity premium on AI-exposed names. Headline risk around governance and a core supplier&#x27;s exposure to geopolitical restriction erodes that confidence, and lenders start to reprice the risk that the buildout outlasts the demand narrative supporting it.</p><p>This lines up with the broader tape today: the Fidelity note on floating-rate loan appeal given rates are not falling, and the 11bp widening in the HY OAS to 3.34%, both point to credit becoming more discriminating about structurally leveraged, capex-heavy borrowers. IG spreads were nearly flat at 0.90% today, so the question is whether this stays contained to high-yield and leveraged loan exposure tied to AI infrastructure or starts to bleed into the investment-grade paper of the large-cap issuers funding the buildout.</p><p>Watch further Nvidia-specific news flow on succession and the China chip policy response, and watch spread performance of AI-linked high-yield and leveraged loan names relative to the broader HY index. A persistent widening gap versus the rest of high yield would confirm the market is pricing AI-specific credit risk rather than a macro rates story.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMikwFBVV95cUxNd2s1OTd5YWwta0FpTHlwdW5YbUc5Zmc0S3RfczZVTTM5MXBaWlpuZHV4ajRNaGZqNXVuaUx5XzJlZkdqT203WTJHdmJpNllpX3plcFFqMkFqRmRkWHRycDlEWUNoNUtOQ3cwUnRaREJ0NVZhT0NyaWZMODgwcXRCZHJXZ3VfWkw2R3dham9Wc3RRaEk?oc=5" target="_blank" rel="noopener">Reuters</a> · <a href="https://www.cnbc.com/2026/11/18/nvidia-chips-china-military-ai.html" target="_blank" rel="noopener">CNBC</a> · <a href="https://news.google.com/rss/articles/CBMijwFBVV95cUxNZUJDcjF0WHJMNFdpaERpX1FsN1dVUmM4Sno1ZWN6Z0hTTFZRa3hIUFkzUzZ5Nlp4YV9GUEFJejB2UG1XMnhlNzJzemlweGN0Rk9RQld5S0JDQUIzVXRCdGNxb19CRVdZbENNdU95dzlFbnhxb3Q4V2d2bnBQV2w4LXhGZG5mZ1pFU3haWk9EQQ?oc=5" target="_blank" rel="noopener">Fidelity Investments</a></div></div>
+      </details>
+    </article>
+
+  <hr class="rule">
+
+  <h2>Sector Update</h2>
+  
+    <article class="entry">
+      <div class="entry-label">Energy <span class="tag down">XLE -0.52%</span></div>
+      <h3>Outperforming amid a market-wide selloff</h3>
+      <p class="brief">XLE slipped 0.52% to 63.36, a fraction of the damage done to the broader tape as the S&amp;P fell 1.92%, the Dow dropped 1.64% and the VIX spiked 18.7% to 22.91. WTI held flat at 89.62, giving energy equities a commodity anchor that most other sectors lacked today. Credit spreads widened broadly, with HY OAS up 3.41% to 3.34 and IG OAS up 1.12% to 0.90, but nothing in today&#x27;s headlines points to energy-specific stress in that move. The sector&#x27;s relative calm looks like low-beta behavior in a risk-off session rather than a story of its own.</p>
+      <details id="sector-0">
+        <summary>Read more</summary>
+        <div class="detail"><p>The dominant fact of the session is dispersion: equities broadly got hit hard, with the Russell down 1.43% and the Dow off 1.64%, while XLE lost only half a percent. That gap tracks a flat WTI print at 89.62 and a VIX that jumped nearly 19% to 22.91, the kind of setup where energy&#x27;s commodity linkage insulates it from a pure equity-multiple selloff. EnergyNow&#x27;s piece on depleted global oil inventories argues the next price shock, when it comes, could be sharp enough to roil markets broadly, a reminder that today&#x27;s calm in crude is not the same as slack in the physical market.</p><p>OilPrice.com&#x27;s rundown of five oil and gas names that beat Q3 estimates gives the sector a fundamental floor headlines don&#x27;t always provide, suggesting earnings delivery is still solid even as the macro tape wobbles. The ABC News piece questioning whether producers are profiting from the Iran conflict is a political and reputational overhang more than a trading catalyst today, but it keeps windfall-profit scrutiny on E&amp;Ps and refiners in the headlines. Beyond that, the day&#x27;s energy coverage is thin on company-specific detail, which limits how much dispersion within the sector can actually be attributed to anything other than broad tape direction.</p><p>Nothing in today&#x27;s set points to an energy-specific financing story, but the Bloomberg item on a Canadian fund that beat the market by calling a peak in energy stocks is worth flagging on positioning grounds. It signals that at least some institutional money has already rotated out of the trade, which matters more for how crowded or uncrowded the sector is heading into any oil-driven catalyst than anything happening in credit markets today. With WTI flat and the inventory-depletion narrative still just a warning rather than a price move, valuation discipline rather than balance-sheet stress looks like the relevant lens right now.</p><p>From here, the setup hinges on whether the EnergyNow inventory-depletion thesis starts showing up in the barrel price, since XLE has been trading more off the equity tape than off crude itself today. A continuation of the broader risk-off, with the VIX already up nearly 19%, could eventually drag energy down with it regardless of oil&#x27;s level. The catalyst to watch is the next EIA inventory print and any escalation in Iran-related headlines that would move the conversation from political scrutiny of profits to actual supply risk.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMinAFBVV95cUxNUV9YajZLcHUxLVFKVzBCLW41WS1vUGNuankwUmtqMWhRVEFLY3pxZmVCN3dMNUpIZlViQnR1dDVRazdxdExGelJnbjZfWFNVVEM4Q01KZjV3ZEM3UElMd3Z3bm52Nl9yck9FNWhBWXBLMGJMZ3ZhR1dNMmpyUFZqQWhHaDduNk9hWGxmaDY5ZlJiYzVQcnlRNEhXbjXSAaIBQVVfeXFMTjR2MEhxN0ROWG5zR0FWbGdCMHptdG5UVG10dmZwVE94S2xEdzdJeVJEeDBTaXNGbk4yWEF3bnIzUENPSzZJcnZoRzhJQUFRMk45VTB2aWVhMEdoa0ZlWExDcklnU0hpdkgya0hCLXczOU01aTEzci1Qb1pFY0hMMTJ4cVhabDRSM3dPU0xkc3RKV3B5RG9ZYl8wbkEyQVVYaDJB?oc=5" target="_blank" rel="noopener">ABC News</a> · <a href="https://news.google.com/rss/articles/CBMirgFBVV95cUxNSS12RDZhOWx3clExalhEQVFOZ2hvTW1WdHhObGV2WW8wTU9YWlVXZDUtVEVnVkVTeUFVb0dCOGdKMFNvOUw3SHcyNzBZQ2U3MzIydERIcTFLaDVqejR6OV80dlJvRHRwZmxuRzZLTjRxc0RiTGZpTkc0SS1IaVkzT1dzbmNROWotbmk2UVlySVM4WWdkT05pS2tGUDZ3eDNSUG93RnUtdERVSnk2TnfSAbMBQVVfeXFMTjNlQi02Q3c1dWlVLUFFcU1qRXoza1JDRDBPZ09hZjZlTUx2cU5nX3R6RWNmTTdYYkhaNHZoXzExS1RVT2hJLVhyNjNBZ1FkWWVjTFdlMjF3eGs4UXpPUXRtUHA4M2V2N0RfVGNxRTNOWEtXekxnNzV6dE90eVdXa3kzYlZBTDlBSlJMSnpzQXZzQkEzOXJyNDZrd0RpeGUzVEtjbUpaT24wMmVWT0hWMFQwMkE?oc=5" target="_blank" rel="noopener">OilPrice.com</a> · <a href="https://news.google.com/rss/articles/CBMirAFBVV95cUxQTzJ2Rmxmd19zVGUwVzJ3bzdEeHp4NTczY0tCM0MxYzlnNUU5UTRIZk45cndabTA0TnNoblRoc1FsWE12bTYtWGVHSWhkdEpBcnNYeDExZC1XWFN5SWhjS20ySEh4M1pHeFJ0RTFaSW9DT0JXYlMzNzdHS1dsWFUxWVZISjNMT045RkZoZmZDOFRHT3pFNHVDTVc0TlJEZVo5cVdMajNZSERCSmJH?oc=5" target="_blank" rel="noopener">EnergyNow.com</a> · <a href="https://news.google.com/rss/articles/CBMiswFBVV95cUxQUHNVR1N1ejlpUlFfWl9UX1Ntc0J2TjRsZVpjWHpOTVRUVjBra1RfTk1TVE9yTWMwR1ZubVNzbGpyM3pqbERJX0pVRTJ2UUMxMTBsNTl4Y1dGR09ncEtXQ2ZkMWZybGw5RzZVRnh6ZjZaRUEzR294T2pGT0dtV3lsemdsa3ZDTi1tYnppTEMwR2VCRXhwZGZHWVdkYzVPMlg5Qi1NVEZLLU1TdUkyY29PRjhTUQ?oc=5" target="_blank" rel="noopener">Bloomberg.com</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Technology <span class="tag down">XLK -0.91%</span></div>
+      <h3>Capex Doubt Triggers Fastest Tech Exit</h3>
+      <p class="brief">XLK fell 0.91%, actually outperforming the S&amp;P 500&#x27;s 1.92% drop, but the tape masks a sharper rotation story: BofA&#x27;s latest survey shows fund managers cut tech holdings at the fastest pace since 2006 on AI capex anxiety. Oracle was the session&#x27;s clearest casualty, down 3.48% as capex-spending concerns hit the name directly. The VIX jumped 18.7% to 22.91, and credit spreads widened in sympathy, with HY OAS up 3.4% and IG OAS up 1.1% on the day.</p>
+      <details id="sector-1">
+        <summary>Read more</summary>
+        <div class="detail"><p>The dominant story in tech right now is positioning, not fundamentals. BofA&#x27;s fund manager survey showed allocators trimming tech exposure at the fastest clip since 2006, a de-grossing pace that reflects accumulated worry over AI capex discipline rather than any single earnings miss. That survey result lands alongside a sector tape that was actually relatively orderly: XLK&#x27;s 0.91% decline was milder than the S&amp;P 500&#x27;s 1.92% drop and roughly in line with the Nasdaq&#x27;s 0.74% slide, suggesting today&#x27;s session was broad de-risking rather than a tech-specific flush.</p><p>Oracle was the standout single-name mover, down 3.48%, and it sits at the center of the capex debate given how closely its spending plans are tied to AI infrastructure buildout. The dispersion in sentiment is notable: Goldman is simultaneously publishing bullish framing, flagging 24 &#x27;physical asset&#x27; stocks set to benefit from AI adoption and reiterating a S&amp;P 500 target of 8,700 for next year built partly on a shift in AI investment patterns. That split, cautious positioning data against constructive sell-side framing, is exactly the kind of tension that produces choppy, two-way tape in mega-cap tech without a clean directional resolution.</p><p>The credit tape adds a relevant data point for anyone watching capex-funded balance sheets. HY OAS widened 3.4% to 3.34 and IG OAS widened 1.1% to 0.90 on the session, a modest move but one consistent with the equity market&#x27;s reassessment of how much AI infrastructure spending the market is willing to underwrite. For a company like Oracle, where capex plans and the appetite of credit investors to fund them are directly linked to the AI buildout narrative, even small OAS widening is worth tracking as a signal of how much slack the market is extending to leverage used for data center and chip spend.</p><p>The catalyst to watch is whether the BofA survey&#x27;s de-grossing proves to be a durable reallocation or a short-lived flinch. Intuit and Elastic both report in the coming sessions and will offer a read on software demand that is separate from the AI capex debate, which could help the market decide whether this selloff is a capex-specific repricing or a broader tech derating. Until then, expect the sector to trade on positioning flows and survey data as much as on fundamentals.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMixwFBVV95cUxNUmxuUVF0TXZlTTFYWVFZSWJ3OGFCLTV0WHVWVjNNcGg1bGtGLWFheWJDSkJlanFmbmYzUkpxQ3IzNnc3enhDckdySXVFQ3VlSEI2UEtiM19rZmJPV1ZnWGNYNFNVZ044OFROaDdsQkp3WWc4NWc2N3lkZEtCUkd3YXNyZEctTWdZMFVDMldoR2ppZmZWYzNhbDVRZ0hpeDVXeHhkS053SGsta0pBNzdEMzdPV1FEQjZPQVJEZmJRWVF4LUszYnJF?oc=5" target="_blank" rel="noopener">MLQ.ai</a> · <a href="https://news.google.com/rss/articles/CBMiiwFBVV95cUxQSkV4TG15WTZDbG4zN24zWDlEdjNSUk10OENRWVdtV2thRGt5YlFzQzI3Z3RoYjZNVHNLZkRuRWpVWEJva3AzTDVYRnNnOVdncHNTY0c2VVNVa05DcG5IZFNCYlN1Wk1EeV9pVG9LUmdmVjRGaUg0MlVITzhqSGhqRUJuaVZTZVFhd080?oc=5" target="_blank" rel="noopener">TradingKey</a> · <a href="https://news.google.com/rss/articles/CBMirgFBVV95cUxPVjVnd2ppRm1rSHNoWGhjOERVVVJ0ci04aEU2UjZHa01ab21MM1UzRHZNTWxra25jV1BYM0U5ZWxWUTNKRkRhSW9kaGwyWGNDQXVWS3NycGNUNkYwM0RTQUR1bEI2WUpqeUxEM2dVendPRWZITTZqOXo0aHM4UU5jSnZHLXhXSk5KMlRoNkhNXzl4bjRnbVB5NE8wYVBMMF9YdlBRZllRWG9KR25KQ0E?oc=5" target="_blank" rel="noopener">Business Insider</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Health Care <span class="tag down">XLV -1.41%</span></div>
+      <h3>Defensive bid holds despite approval flurry</h3>
+      <p class="brief">XLV fell 1.41 percent, a smaller decline than the S&amp;P 500&#x27;s 1.92 percent or the Dow&#x27;s 1.64 percent drop, giving the sector its usual defensive character on a day when the VIX jumped 18.7 percent to 22.91. The sector had no negative catalyst of its own. Instead the tape was crowded with routine FDA approval headlines spanning GSK&#x27;s lung cancer drug, a Genentech combination for ESR1-mutant breast cancer, and a Bayer blood thinner. None of it moved the sector; the drawdown tracked the broader risk-off move in credit and equities.</p>
+      <details id="sector-2">
+        <summary>Read more</summary>
+        <div class="detail"><p>There is no single dominant health care story today so much as a dense cluster of regulatory approvals landing on the same tape. GSK won FDA clearance for a new lung cancer drug, Genentech&#x27;s giredestrant plus everolimus combination was approved for ESR1-mutant advanced breast cancer, and Bayer got the nod for a blood thinner. Separately the FDA approved a treatment for advanced pancreatic cancer and launched a new Global Regulatory Diplomacy Program aimed at speeding medicine access in lower-income markets. None of these are the kind of singular, market-moving approval that reprices a stock meaningfully on its own; collectively they read as a normal week of agency output rather than a catalyst for the sector&#x27;s 1.41 percent decline.</p><p>The more interesting name-level item is Beren, whose rare pediatric disease drug won approval after passing through four different biotech owners and surviving a major trial failure. That kind of multi-owner, post-failure path to approval is the pattern lev fin desks watch closely because it shows how a single regulatory outcome can revalue a credit that previously looked impaired, independent of where the broader equity tape is trading. Outside of that, the approval slate is broad-based across large caps (GSK, Bayer) and specialty oncology, which is consistent with dispersion inside the sector even as the index-level move stayed moderate and defensive relative to the Russell&#x27;s 1.43 percent and EuroStoxx&#x27;s 1.42 percent declines.</p><p>Nothing in today&#x27;s headlines points directly at health care issuer financing, but the macro backdrop is worth noting for positioning purposes. HY OAS widened 3.41 percent to 3.34 and IG OAS rose 1.12 percent to 0.90 on a day the VIX spiked nearly 19 percent, and health care&#x27;s relative outperformance against the S&amp;P and Dow is the classic defensive-sector response when risk appetite deteriorates broadly. For leveraged biotech and pharma services names, that combination of modestly wider spreads and a safety bid in the equity means the sector&#x27;s relative cost of capital advantage over cyclicals held up even as absolute credit conditions tightened slightly across the board.</p><p>The setup from here is less about today&#x27;s approvals and more about whether the broader risk-off move extends. If HY and IG spreads continue widening alongside further VIX escalation, health care&#x27;s defensive characteristics should keep it a relative outperformer, but a genuine pickup in volatility would still pressure refinancing economics for leveraged health care credits even if the sector itself lags the selloff. The next real catalyst is whether any of today&#x27;s approvals, particularly Beren&#x27;s, gets priced into the underlying equity or credit tomorrow.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMikwFBVV95cUxOU1pFbjgyNlNyS3RWaVNTYVVUZnZHWUNlS1p2TXpudFNBVS12bEtURkoyT1RESmZTVlF3UUFCRVpranEzQ3BYLVctbGlVREZZR1c3UUduQXZKREVrZ3FKRUNEWER4TkhqWjFmVlNnMHZwcEpMOTMwdENoZXZ1OEFPQWZhbHRSaFJpUUZ6cEpIdjBQLTA?oc=5" target="_blank" rel="noopener">WSJ</a> · <a href="https://news.google.com/rss/articles/CBMiigFBVV95cUxQd1E2aTZxeUFlZ0wwaGFhZkVqTTlWOVEwd2dSNHI4MXJXSWdIUWhOSHByMDFrRGQ0aHpBZmU4eFlHVGhTZm9mc3g3ZjBzLVNlbHJRUlNuYU56azJRdXVCS2ppVTQ3bmI1dGZZOXo1OWhRWHozb204OG9ldUE5U196WkpuVF9HeXFXRlE?oc=5" target="_blank" rel="noopener">Endpoints News</a> · <a href="https://news.google.com/rss/articles/CBMixwFBVV95cUxOQllyRkhtR1FKZHFORk1JWDdjVVZkZ01IMEF0Sm16Rl9OdGJpMTFIemM5cTRscHVJTjBlTnhjWGF0YmFuTm5UMDJDd3JVc0RnUjlTNWhZXzlmVlI2SDFmdHo1RDR5bFc3MTZSeU5kR2gxTEgyTDNlYnlsaVA3VENBNmVyVEpNOEFSZTJsQkRQUXlHZk5UR0RXcFg0V0hRZ3JyYmtzVzNGV2JtNm1TU1FFNzVzdmwyQU9uenc2b1R4a0ZXRm1oN19F?oc=5" target="_blank" rel="noopener">The ASCO Post</a> · <a href="https://news.google.com/rss/articles/CBMimAFBVV95cUxOaEpvYnlVR01VRi12OG40LTE3SkFwc2l0VklhUXctY2hSQUZoSDNqcmdLaWJLYUJTaHU0c3NremNmeHk3TFdpRVA2aVdiaTBnSENaaUttNnVCQXRac1ZTS25JUlFSa0hXWE1WMjVJZXBubHJVZmdSZUVDLWwyUGhqNGpnbzVVSVdtRVJmV2RyVG9YajJtaUN3btIBngFBVV95cUxPdFJkdHNUUDFCTlBvejFwN19UOHdFbHdfLW9venJoZUo2MXk2eWUySzhnQXdpYWhWQUZ0VlBoOG9kaG5iNGVEd3JZYVpsMkhMZnY5Wi1kLVVra1gxbUdyNkRzOHM1NVJRSEdTdFRrUnZqbnV3YXd4YTQ5Y1pHRjczLTJBUV9CRDV4X1JBX2xJNVpoeks3anBxREV5N2NwZw?oc=5" target="_blank" rel="noopener">Labroots</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Industrials <span class="tag down">XLI -0.55%</span></div>
+      <h3>Industrials hold up as credit widens</h3>
+      <p class="brief">XLI fell 0.55% to 164.75, a far smaller decline than the broader tape as the S&amp;P dropped 1.92% and the Dow fell 1.64% on a day the VIX jumped 18.7% to 22.91. Credit spreads moved wider alongside the equity vol, with the HY OAS up 3.41% to 3.34 and IG OAS up 1.12% to 0.90, though neither print is dramatic in absolute terms. There is no single hard industrials catalyst in today&#x27;s headlines, the sector flow is dominated by aerospace and defense trade coverage rather than earnings or deal news. The relative resilience versus the Russell&#x27;s 1.43% drop and the Dow&#x27;s steeper fall is the notable feature of the session.</p>
+      <details id="sector-3">
+        <summary>Read more</summary>
+        <div class="detail"><p>There is no industrials-specific news event driving today&#x27;s session. The sector&#x27;s 0.55% decline in XLI tracked a broad risk-off day across equities, where the S&amp;P fell 1.92%, the Dow fell 1.64%, and the Russell dropped 1.43%, but industrials gave back meaningfully less than any of those benchmarks. The VIX spike to 22.91, up 18.7% on the day, and the simultaneous drop in the 10-year yield to 5.12% and the 2-year to 4.83% point to a flight-to-duration dynamic playing out across asset classes, with industrials acting as a relative shelter rather than a source of selling pressure.</p><p>Within the sector, the headline flow is concentrated in aerospace and defense, but it is almost entirely thematic rather than market-moving. Deloitte published its 2027 aerospace and defense outlook and Investor&#x27;s Business Daily ran its routine defense and aerospace stock watch list, neither of which carries a specific number or guidance change to trade on. The more pointed story is regulatory: Citizens for Responsibility and Ethics in Washington is seeking a ruling to halt a Pentagon advisory panel it says is stacked with defense industry insiders, and a separate piece on FOCI and reverse CFIUS rules flags ongoing compliance scrutiny for defense contractors and their investors. That regulatory overhang is a policy-exposure story for the primes rather than a near-term earnings one.</p><p>The credit tape is the more interesting cross-asset signal today even though it is not industrials-specific. HY OAS widened 3.41% to 3.34 and IG OAS widened 1.12% to 0.90, modest moves in absolute spread terms but directionally consistent with the VIX spike and the equity selloff. HYG was essentially flat, down just 0.13%, which suggests the widening is more a repricing of risk premia than a liquidity event. For industrials issuers watching financing windows, a 90bp IG spread and a 334bp HY spread remain historically accommodative, so this is not yet a cost-of-capital problem, just a day to watch rather than act on.</p><p>The setup from here depends on whether the credit widening persists past a single session or snaps back alongside the VIX. Nothing in today&#x27;s industrials headlines points to a specific near-term catalyst, aerospace and defense coverage is running on outlook pieces and regulatory process stories rather than contracts or earnings. The CFIUS and Pentagon panel items are worth tracking for defense-name policy risk, but the more immediate signal for the sector is simply whether XLI&#x27;s relative outperformance versus the broader indices holds if the equity selloff extends.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMitAFBVV95cUxNMVNmallkeHJYYW91U2N6dG42elhMb1JyazVfRmVhQ21aZTZqb2I4VDM3TWxic3BsVkMxNVF1SXJPaTF6UGNHemFNSkU1YkY4UjZsM0o0bU9wek5ZOS05YjBSMXhwaUV1aUtDWDliZjVSZmkxamNyRmtobUhHekFTOHRTbWEzU2lHbk84UFNFQTR2MGlFWFk3V2g3eXoyMTRRRXgzTkVWanJrMVRZazIyU1B0WkM?oc=5" target="_blank" rel="noopener">Deloitte</a> · <a href="https://news.google.com/rss/articles/CBMikAFBVV95cUxORjd0emVpMjhDLXNuUjJCZzZ0eXM4NjhrZjNrdTVZTU9yTjBBUHdKQi1tNFYzbFBjMEZvdmdfZ2tyTHM2bHBMRWNmeUFlNnY4a1pnWXozYTVyRFVZOGpNYm1WM0NuWmN4ZUZlbTVKcnZmTDJBcUYwV1ZORmdUZnkxVGE2UFA0d3BkemdKak13bVk?oc=5" target="_blank" rel="noopener">Investor&#x27;s Business Daily</a> · <a href="https://news.google.com/rss/articles/CBMi1wFBVV95cUxPdWt1eW9rWXhjeHdTNl9naFdJNUJhRk9HUGw3bkk3bU91UVFKRW5XODBRdEZ2elpUYVk5ZXRGbENYZlYwVHZjY2wweF9PQ0hYblQxU2lpWVgzdG90SjI5Sm9JaU9vNEJKM2loY1FaUHg5bi1WWDhjSHRxb1JVZkFHcTk2NFhzYXlFWVd2d3B2NmVLTWljVlM4VEJlUDU3M3dqQW9BMUV1U3NSVjVyZ1I0MlJibUpHUlpZMzNCR0VMTFZKUHRuM2NRRmczU3UtMXFDdGE5cS1ZZw?oc=5" target="_blank" rel="noopener">Citizens for Responsibility and Ethics in Washington</a> · <a href="https://news.google.com/rss/articles/CBMiqAFBVV95cUxPb19WTm5kd1dkYUdaUTRGOEFEejRlelJ2akFQV205eWh6UEtuWGhMUElVUkt6b0tBOC10aDJlR3d6WUF5NjR0aE4tbTJjSmRma2Z5YldVSm5JYWJTN3FqT0lKM25Rbm1YdHVhRTRfU0JzQ0NhU1o4NTVmdDQ5djBOeVVOZ2swUG42TU5aZzBEYjZXdlhfa1BsVDJKb1JUVnBQSmFITE15Rkk?oc=5" target="_blank" rel="noopener">Spencer Fane</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Real Estate <span class="tag down">XLRE -1.49%</span></div>
+      <h3>Office bifurcation widens as spreads back up</h3>
+      <p class="brief">XLRE fell 1.49% to 43.59, a smaller drop than the S&amp;P&#x27;s 1.92% but in the same risk-off direction as VIX jumped 18.7% to 22.91 and credit spreads widened, with HY OAS up to 3.34 and IG OAS up to 0.90. There was no real estate specific catalyst today. The sector&#x27;s news flow instead underscored a widening gap within office between distressed and trophy assets, with vacancy readings worsening in several markets even as Jay Paul secured $228 million in green refinancing for its Austin campus.</p>
+      <details id="sector-4">
+        <summary>Read more</summary>
+        <div class="detail"><p>The sector tape today was a broader market story more than a real estate story. XLRE&#x27;s 1.49% decline tracked the general equity selloff, which saw the S&amp;P fall 1.92%, the Dow fall 1.64%, and the Russell fall 1.43%, all against a VIX that jumped 18.7% to 22.91. UST10 actually eased slightly to 5.12% from a higher prior level, which would normally offer some relief to rate-sensitive REIT valuations, but that was overwhelmed by the broader flight from risk assets.</p><p>Within the headlines, office remains the subsector doing the most talking, and the story is one of dispersion rather than uniform stress. Asheville&#x27;s commercial vacancy hit a 10-year high following Hurricane Helene, Seoul&#x27;s CBD vacancy could approach 9% on new supply and tenant departures, and Manhattan&#x27;s 10.2% vacancy rate, while the lowest among the top 25 US markets, confirms how elevated vacancy has become even in the strongest market. Against that backdrop, conversion activity continues in Chicago near Old Orchard and in Springfield, where a previously written-off office building is finding new life, evidence that obsolete office stock is being repriced into other uses rather than re-leased as office.</p><p>The one financing data point in today&#x27;s flow points to bifurcation in underwriting as much as in leasing. Jay Paul&#x27;s $228 million green refinancing for its Austin office campus shows that lenders remain willing to extend sizable debt against a trophy, sustainability-certified asset even as credit spreads widened sector-wide today, with HY OAS up 3.4% to 3.34 and IG OAS up 1.1% to 0.90. That gap between financeable, well-located, well-certified assets and the vacancy-plagued stock getting converted or left vacant is the clearest capital markets signal in the group right now.</p><p>The setup from here depends on whether today&#x27;s spread widening and VIX spike prove transient or mark a more durable repricing of risk, since REIT valuations are sensitive to both the discount rate and the cost of rolling debt. A further leg higher in HY OAS would raise the bar for refinancings like Jay Paul&#x27;s to clear, while any stabilization in the VIX back toward recent ranges would let the sector trade more on its own fundamentals, including the vacancy data out of Manhattan, Seoul, and secondary markets like Asheville.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMiqwFBVV95cUxQLVlaZVo3aURsekpDSGhHOHlmdTVhYmItWWEtdXNhcVBZQVBPSHptSk9CMkxVSWJlNG5ha2hNeDZNMU40aFhoRjExSFg3YjRKeF9GZ2lhcVNTME9OZmU4Qjd4b1JLd1RqRlVuWDRZaTlVMVVFcjNNMk9mWFBVN04xU1dfN1lIb1FUNmRFYTNiNGlyLW9BckVHdmhwY3h6VHFBNjVDcGd1OXhNZXc?oc=5" target="_blank" rel="noopener">WLOS</a> · <a href="https://news.google.com/rss/articles/CBMisgFBVV95cUxNOXRKVjFKTVBheWhlYWJXZllsejZhamY2TlI4X2xRQWdtTkxDRFc5V29wNHhiekFlaW84TUx6WnlKRGtiRkROcFYyQTVkeXFSOEVZUzE2c05DNjJ1Q2k0dDhPelFZcTE5ZHdwNjdhemNuQW1jSlcycU5DTkY4bjIyTFBPUy1JbkRlS2hSQU1ZTUpOa3I1dGlJTmtxMmV2dTJvR1R6QUJUNGFaU2dkbkx0bE53?oc=5" target="_blank" rel="noopener">Crain&#x27;s Chicago Business</a> · <a href="https://news.google.com/rss/articles/CBMipAFBVV95cUxOaWNyLTRuTkJJUzZld2dtUDEyS0YtZnNRZDZKUXhUbDV0N2wybzBiZWFOeVJNX1BnQW54MHJoNkdnTkhiUjJ1akNNNE5vSEFOa3l3eVlRZmNYczVpU25lNE8wbl81bjFxeWIyU3Z1bEtYbFNQeHQ1a0Z5YTRvZUNNeUlQM2N4dExzTDh0eWZZZ0lXM2pyODNfYm9vMjJ0cVZEaDNtag?oc=5" target="_blank" rel="noopener">The Business Journals</a> · <a href="https://news.google.com/rss/articles/CBMingFBVV95cUxOcEhJb2h0cC10WWtab3YxekFwZ3RnZ1hsMmp5aFo2VjhsbHZMSGUtQnFXMTMwUDBDU08welI3SjdQblR5LWpmN1duUkUzeVR6b1k0TkR4VVV6OTFJV2dUY3BhcjFZZnI2NVFFZFhBMjhvMlN0RXgyZUpZRnM3V3RSZ0tYSmM1S09WMFRPY0daZGlFUU9ITkxIenFXa2g1QQ?oc=5" target="_blank" rel="noopener">The Real Deal</a> · <a href="https://news.google.com/rss/articles/CBMiuAFBVV95cUxQX1poV25Yb29zTTZVVms3UEVVdGQ3Q2M4cjRmZmctZTBST2Ruc01jSVNBXzRqd2ZMdXZzbXpRVUtPZHRMYURhV29ZWmZzQ0hrd1l4bnVnNVNzNUJxWEZvSHBFTW1rTzAzOEY1Rk0zRXNpa2hrc2pwM1k5RGlwc1dRQk9NN2dsYzY5ZjFTYkdUcGVzTEF5SVowNVV6TS05bkNoX0c4aE5RUWZCOUxNX1RJazNBVkJHcFBJ?oc=5" target="_blank" rel="noopener">Mortgage Professional America</a> · <a href="https://news.google.com/rss/articles/CBMiyAFBVV95cUxObXBjekhSYWxkdVowZU1xUmp5YXREbFhDRjdMZzJ0c1RBbDJSNEZKdW5md0UxM2RyOERCUzRFR0dHdjZHQ1ZrcjZXRW9YV0drNDZCSGNTYTREek8xMERvVnZOTG9tZExZNmZMeEhqSDR0bTB4dGpya2MxNWRmUmlEd1RCMGJoM3h1VjZwdm1jd2xpcmtqbEpEUGl1VWxnbVVSakdpRENaQzFsX3FwWnE3MmZGU0dsWkVWSzlrMDZ2NzZkUEpHVU4zMA?oc=5" target="_blank" rel="noopener">Real Estate Asia</a> · <a href="https://news.google.com/rss/articles/CBMimgFBVV95cUxNdXFlTXRFcUZOQ1p4elc5T0tmMDFsTktNSGxGN2FpT1hiUWVhUzExaWpFZVFSNHlMSGlfNFdMSmJqNUtZZEZkQW5EMmJweDIyWGd6WndtcWc4Sm96bVMwTEhsemczbVY3RWlsZElOVlVrdzlYVF9CUjllNGFxOVA1cmo3NDgzM1ZRQmFZY2hSZXN5ZUxhWlU4b2Jn?oc=5" target="_blank" rel="noopener">Yahoo Finance</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Consumer Discretionary <span class="tag down">XLY -0.89%</span></div>
+      <h3>Headline sales soft, core demand firm</h3>
+      <p class="brief">XLY fell 0.89% to 117.10, a smaller decline than the S&amp;P&#x27;s 1.92% drop or the Dow&#x27;s 1.64% slide, as today&#x27;s damage was mostly a broad risk-off move rather than anything sector-specific. October retail sales rose just 0.2% month over month, with auto and furniture demand described as freezing, even as core spending reportedly hit its strongest momentum since August. JD.com&#x27;s revenue miss on weak Chinese consumer demand added a parallel data point on global consumer softness. The sector&#x27;s relative outperformance against the broader tape is the notable detail, not the headline print itself.</p>
+      <details id="sector-5">
+        <summary>Read more</summary>
+        <div class="detail"><p>October retail sales data came in mixed depending on which cut you look at. The headline 0.2% month-over-month gain is being characterized by some outlets as a deceleration (SupplyChainBrain, Briefs Finance) and by others as a beat against expectations, with core consumer momentum hitting its highest level since August. The common thread across the coverage is a clean bifurcation: auto and furniture demand froze, while core spending excluding those big-ticket, typically financed categories held up. That split is the real story, not the single headline number.</p><p>The dispersion inside XLY tracks that bifurcation. Autos and home furnishings, the categories explicitly called out as freezing, are the most rate-sensitive and financing-dependent parts of discretionary spending, and they are the likely laggards within the sector today. Everyday and value-oriented retail, which shows up in the firmer core print, is the more resilient half. JD.com&#x27;s miss on weak demand is a China read-through rather than a direct hit to domestically oriented XLY constituents, but it reinforces the same theme of consumers pulling back on bigger purchases while sustaining baseline spending.</p><p>The freeze in auto and furniture demand lines up with where financing costs bite hardest. The 10-year sits at 5.12% and the 2-year at 4.83%, still an elevated level for financed big-ticket purchases even with both down slightly on the session. Credit spreads widened today, with HY OAS up 3.41% to 3.34 and IG OAS up 1.12% to 0.90, but both remain at levels that don&#x27;t signal a funding problem for retailers specifically. This reads as a cost-of-capital drag concentrated in the financed, big-ticket corner of discretionary spending rather than a broader credit event for the sector.</p><p>The setup from here hinges on whether the core spending strength in the October data holds into November, and on how the Fed minutes referenced alongside the retail sales release shape the rate path that is currently keeping auto and furniture financing expensive. A VIX print up 18.7% to 22.91 suggests today&#x27;s discretionary weakness was more about broad de-risking than a sector-specific repricing, so a reversal in volatility would likely do more for XLY&#x27;s relative performance than any single data point on consumer spending.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMikgFBVV95cUxPZ2R5VmZsWl9VaHJHaVVDcFN5Wk1IM2duU0lRRFFXSTMwektDRmw1aHp0VS1WYWhWYVZGUzJYdUVpRE9wUnh4eElfSlhPNTNDbzQ4NmRiZVBoaUNWNU5LRHhOVkNGR3JvM0ZvUXIwaTl4dGptS2RKT3BhS0QwODNBYWFwQ0xhX1B1cnczWDB2WExfZw?oc=5" target="_blank" rel="noopener">Briefs Finance</a> · <a href="https://news.google.com/rss/articles/CBMivAFBVV95cUxNR3BoZVpOcVZncmlRWkdNWG9CNEdMekh0NFpZUlhkbVF2TXFkN3QxMTc3Tko5TkFrVkR3bk4zaHI1Z0VXLTBHX05UcnE2LV9mQkwtanZSM1RCRElpMllJZmYxY2RvaDNmQ2tjYy16YmoyVHpFOXFPZE9zX3E4MXRydEdkaGJpSEdhaGNWclUtTVVtNk5QdGZRdzN2aDYxRGc3RGtQN20zeklXUkp2b2NOQ1JUTHpvMmdwZlhHNQ?oc=5" target="_blank" rel="noopener">SupplyChainBrain</a> · <a href="https://news.google.com/rss/articles/CBMidkFVX3lxTE9mMElUeFNoNkp4Rk0yU0l1YTEyYWpibE13bUxMMEtuSVJEeXN2cHd2aWg5NHJwTlFUaEVHQ2lkQTBFWWluZHQ3UWk0cXVsNTE2Rmp2S3I2bDFFc0pTSWlVM2E4R0ZwQVRIdUJBRnVmUHkwQWJUeFE?oc=5" target="_blank" rel="noopener">BigGo Finance</a> · <a href="https://news.google.com/rss/articles/CBMidkFVX3lxTFBLUS10aUN5WFdNeVlYRGVQOUdpMFZDTERiM2t2WEtTQ3ZJNXRWTkM1SGRld25SUE1WcnRFZTNLazdjdFppYjUtLWdkeGxaMVB5amZBVlZ3OVZ5NFJjcm15ZmdVb1JFMm1INmRudTFMYko0S3dSTXc?oc=5" target="_blank" rel="noopener">BigGo Finance</a> · <a href="https://news.google.com/rss/articles/CBMi6wFBVV95cUxNVWtqQ3ZPSVM0X3FhenhpUUNzVFllSGlwTUZ4Q0hsNWxmR1c2SlI3VHlEZE41TWgyZHI2VVRsT0ZRZ0otSzU4aGJ5U0ZEWHNHQUVtZ0otakZsMXd2a01vTTFuWjZUbFdDbDlVbFMzN2RjX09MNnNjdUQzVW41cW5rOC1jSE9SSW5jQ3haTVEzWmM4a1BZX3ZrU09BM1F3eUZqWFA3a3VBYkpOc1hkMUFteGJCNkRFRzhEQVUtM1Y0eDNmeVRfTEZWbEw4cVEtWGFFUGtoWm1MTmtDTEJ0UjhiMlpKNGtlX3VEQUlV0gHmAUFVX3lxTE93TmdXNHExZmw1WXNZbFZoZWpqaDRNYTJqaXV1by0zTWFuWHk0YUlmcm9zSmJBX2Nrc1hpcXpSNjFxZFljU2FCVm1uTnlnQ29BczdaV3RwN3RKSnlfNXdSR3BaWkUyOXpaZWNuc0JNVUFLa3RDT1hQNDM0bEtBS3BLTzc2RVJRX3REVTFKZjhUaDl2dmo1STJVTGp3SUo4TTFmNU9qM1VkRVdxUGlhUnI2ZDlJYXVZZVhVXzdZcjNfQTJ2U21GRFAxeFVVSFBpOVNnc1JpaEFuMHVaTmlKZkQwZnhSVkpR?oc=5" target="_blank" rel="noopener">ET Retail</a></div></div>
+      </details>
+    </article>
+    <article class="entry">
+      <div class="entry-label">Consumer Staples <span class="tag down">XLP -1.23%</span></div>
+      <h3>Staples hold up better than the tape</h3>
+      <p class="brief">XLP fell 1.23% to 91.46, a cleaner defensive showing than the broader market&#x27;s decline, with the S&amp;P 500 down 1.92%, the Dow off 1.64%, and the Russell down 1.43%. The VIX jumped 18.70% to 22.91 and both IG and HY spreads widened, which is the backdrop that typically sends flows toward staples even as the sector posts a down day. The one real company catalyst was Tyson Foods, where an earnings beat came with a dividend-focused warning. Otherwise the sector&#x27;s news flow was thin, running to Japan tax-cut speculation and grocery-inflation explainers rather than anything that moved positioning today.</p>
+      <details id="sector-6">
+        <summary>Read more</summary>
+        <div class="detail"><p>The defining feature of the session for staples was relative, not absolute. XLP&#x27;s 1.23% decline was smaller than the drop in every major domestic index listed, a pattern consistent with a broad risk-off day where the VIX spiked 18.70% and investors rotated down the risk curve rather than out of equities altogether. That is the sector behaving as designed: it fell, but it fell less, which is the entire investment case for holding it when volatility is repricing this sharply in a single session.</p><p>Tyson Foods is the one name-specific story with real substance. The earnings beat was reportedly accompanied by a warning that TradingView frames as a flag for dividend-focused staples investors, which matters given how much of the sector&#x27;s shareholder base is yield-driven. That tension sits alongside a 24/7 Wall St. piece highlighting staples names yielding over 3% as reliable holdings, underscoring that income-seeking demand for the group is active even as at least one bellwether protein name is signaling some underlying softness beneath a headline beat.</p><p>Credit conditions deteriorated modestly across the board today, with IG OAS up 1.12% to 0.90 and HY OAS up 3.41% to 3.34, alongside a 10-year yield that eased to 5.12%. For a sector that is a heavy issuer of investment-grade paper, a one-day widening of this size in IG spreads is not yet a cost-of-capital story worth dwelling on, but it is the direction to watch if the VIX spike proves to have legs, since staples balance sheets rely on cheap, reliable refinancing rather than equity-driven growth.</p><p>From here the signal to track is whether Tyson&#x27;s warning is idiosyncratic to protein margins or a preview of broader input-cost pressure, especially with the CPI index still grinding higher at 337.48 and separate coverage flagging that consumers will pay more for food next year. A clean read on that, plus whether today&#x27;s credit spread widening extends or reverses, will tell you whether staples keep their relative-outperformance role or start trading on their own fundamentals.</p><div class="srcs">Sources: <a href="https://news.google.com/rss/articles/CBMi2gFBVV95cUxOdU9zYjlPUVNfZTNOTjFhdHhZbW9GUTh4R0tfUHFaZzRSRVI3SWU0YU9DdDdYX2ZrMENvc21EWC1EbHkzQlZUSDFwd2d4UWxmdEdQa3hWT1JmQ2RBRjVUOXQ4WDFOTW4zVW5KYjdmaE51Y1RCbm11eG1iREtXZHRkY2dNUklBenJwVTFsNlpfUjVlVWlOSkJjLU9JWFNIZFBINWRMLVhtR3Bwd2JiNjNadjVQcF9Kd0Ixc1BreHpONnVCNTJySERBbUs5Z1JDOVQxdEFVUFI1RlVaQQ?oc=5" target="_blank" rel="noopener">TradingView</a> · <a href="https://news.google.com/rss/articles/CBMiwwFBVV95cUxQMUUxVDBqZWI0VVdvUXRrQUlmb0NodHVnOHRwMF9QS2RSMXhvVkhEYi16a2pBdEpTUkhXb3VWT3I3OVhFckVZUWc3R2lOWnhfUTFmSG1ZdFFtd24teGZLOVJERDVCUEV1U1ZhcFRzTUd1Y3FaY1pFbGRPajNWQ2lhMHJKcHBFSmZ0eHhuSEZxQjZLVHhUa0RsR21oNE14WDV4Z21QcE9KSklkTEl2dlZuamFqY05IMG13VWVFVHI4WFFkVXc?oc=5" target="_blank" rel="noopener">24/7 Wall St.</a> · <a href="https://news.google.com/rss/articles/CBMilgFBVV95cUxQM3JjV1pzSDFVc1RvaFdleXBURUNSd1RMS0F3cnNzdzR3VHZFRFdjTk5vVUVneHdGNXg4bDFfQzJJd0JOSHMtajhpb0Y3aWxWWi02QlJuVFFReHNfZVQ5LTktZk1OMHFnbVNvZmlSbkp4SkVNVWFoUWVEMDVDdEU1NGNzcTdadmRoQmJTd0VfbFl0WVJaeVE?oc=5" target="_blank" rel="noopener">The Real Economy Blog</a></div></div>
+      </details>
+    </article>
+  
+  <hr class="rule">
+  <h2>On the Calendar</h2>
+  <section class="calendar"><h3>Data and events</h3><ul class="cal-list"><li>FOMC minutes released today, with markets parsing for the internal vote split behind Musalem&#x27;s and Waller&#x27;s hawkish comments.</li><li>Fed officials appear positioned to raise rates again at the December meeting per CNBC reporting on Governor Waller.</li><li>Bank Indonesia interest rate decision this week.</li><li>Powell&#x27;s current term on the Fed board expires next month; he has said he intends to remain on the board.</li><li>UK inflation and labor data continue to pull the Bank of England in different directions ahead of its next policy decision.</li></ul><h3>Earnings this week</h3><div class="cal-day"><h4>Wednesday, November 18</h4><ul class="earn-list"><li><span class="tick">LOW</span> Lowe&#x27;s <span class="meta">before open · est. $2.91 EPS</span></li><li><span class="tick">PANW</span> Palo Alto Networks <span class="meta">after close · est. $0.99 EPS</span></li><li><span class="tick">TGT</span> Target <span class="meta">before open · est. $2.09 EPS</span></li><li><span class="tick">TJX</span> TJX Companies <span class="meta">before open · est. $1.35 EPS</span></li></ul></div><div class="cal-day"><h4>Thursday, November 19</h4><ul class="earn-list"><li><span class="tick">INTU</span> Intuit <span class="meta">after close · est. $2.75 EPS</span></li><li><span class="tick">WMT</span> Walmart <span class="meta">before open · est. $0.64 EPS</span></li></ul></div><div class="cal-day"><h4>Tuesday, November 24</h4><ul class="earn-list"><li><span class="tick">ADI</span> Analog Devices <span class="meta">before open · est. $3.92 EPS</span></li><li><span class="tick">MDT</span> Medtronic <span class="meta">before open · est. $1.34 EPS</span></li></ul></div><div class="cal-day"><h4>Wednesday, November 25</h4><ul class="earn-list"><li><span class="tick">DE</span> Deere <span class="meta">after close · est. $4.17 EPS</span></li></ul></div><div class="srcs">Schedule via <a href="https://finnhub.io/" target="_blank" rel="noopener">Finnhub</a>, filtered to large caps. Companies move dates, so confirm against the issuer's investor relations page before relying on it.</div></section>
+
+  <hr class="rule">
+
+  
+  <footer class="site-foot">
+    <p class="back"><a href="../index.html">&larr; Back to the latest edition</a></p>
+    <p class="disc-main">For informational purposes only. Not investment advice. Please do your own research before making any investment decision.</p>
+    <p class="disc-fine">Summaries are generated automatically from published headlines and may contain errors or bias. Views expressed are my own and do not represent those of my employer.</p>
+    <p class="built">Built 2026-11-18 08:15 ET.</p>
+    <a class="li-link" href="https://www.linkedin.com/in/ian-anthony1" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect width="24" height="24" rx="4" fill="currentColor"/><circle cx="6.9" cy="6.9" r="1.95" fill="#000"/><rect x="5.2" y="10" width="3.4" height="9" fill="#000"/><path d="M10.6 10h3.25v1.4c.55-.95 1.7-1.7 3.3-1.7 3.1 0 3.75 2 3.75 4.7V19h-3.4v-4c0-1.1-.1-2.3-1.6-2.3s-1.85 1.15-1.85 2.25V19H10.6z" fill="#000"/></svg><span>Connect with me</span></a>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var t = document.getElementById('arcToggle');
+  var d = document.getElementById('arcDrawer');
+  var s = document.getElementById('arcScrim');
+  var c = document.getElementById('arcClose');
+  if (!t || !d || !s) return;
+
+  function open() {
+    d.hidden = false; s.hidden = false;
+    requestAnimationFrame(function () {
+      d.classList.add('open'); s.classList.add('open');
+    });
+    t.setAttribute('aria-expanded', 'true');
+  }
+  function close() {
+    d.classList.remove('open'); s.classList.remove('open');
+    t.setAttribute('aria-expanded', 'false');
+    setTimeout(function () { d.hidden = true; s.hidden = true; }, 220);
+    t.focus();
+  }
+  function toggle() {
+    if (d.classList.contains('open')) { close(); } else { open(); }
+  }
+
+  t.addEventListener('click', toggle);
+  s.addEventListener('click', close);
+  if (c) c.addEventListener('click', close);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && d.classList.contains('open')) close();
+  });
+})();
+</script>
+</body>
+</html>
